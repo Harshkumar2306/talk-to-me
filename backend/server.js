@@ -43,9 +43,10 @@ const __dirname = path.resolve();
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-  app.get('(.*)', (req, res) =>
-    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'))
-  );
+  // Use app.use as a catch-all for any unhandled routes (Express 5 safe)
+  app.use((req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  });
 } else {
   app.get('/', (req, res) => {
     res.send('API is running successfully');
