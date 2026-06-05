@@ -45,13 +45,27 @@ const Sidebar = () => {
       data.append('cloud_name', 'drnp7fcux');
       const res = await fetch('https://api.cloudinary.com/v1_1/drnp7fcux/image/upload', { method: 'post', body: data });
       const json = await res.json();
-      if (json.url) {
-        const updated = { ...user, pic: json.url };
-        localStorage.setItem('userInfo', JSON.stringify(updated));
-        setUser(updated);
-      }
-    } catch (e) { console.error(e); }
-    finally { setUploadingPic(false); }
+      const picUrl = json.secure_url || json.url;
+      if (!picUrl) throw new Error('Upload failed');
+
+      // Save to backend database so other users see the updated pic
+      await fetch('/api/user/update-pic', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ pic: picUrl }),
+      });
+
+      // Update local state
+      const updated = { ...user, pic: picUrl };
+      localStorage.setItem('userInfo', JSON.stringify(updated));
+      setUser(updated);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to upload profile picture. Please try again.');
+    } finally { setUploadingPic(false); }
   };
 
   const bgClass = isDark ? 'bg-[#0f172a] border-white/10' : 'bg-white border-black/10';

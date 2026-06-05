@@ -30,8 +30,10 @@ const uploadToCloudinary = async (file, resourceType = 'auto') => {
     body: data,
   });
   const json = await res.json();
-  if (!json.secure_url) throw new Error('Upload failed');
-  return json.secure_url;
+  if (json.error) throw new Error(`Cloudinary: ${json.error.message}`);
+  const url = json.secure_url || json.url;
+  if (!url) throw new Error('Upload failed: no URL returned');
+  return url;
 };
 
 // ─── Message Bubble ───

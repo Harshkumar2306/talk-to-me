@@ -76,3 +76,23 @@ export const allUsers = async (req, res) => {
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
   res.send(users);
 };
+
+//@description     Update user profile picture
+//@route           PUT /api/user/update-pic
+//@access          Protected
+export const updateUserPic = async (req, res) => {
+  const { pic } = req.body;
+  if (!pic) {
+    return res.status(400).json({ message: 'No picture URL provided' });
+  }
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { pic },
+      { new: true }
+    ).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

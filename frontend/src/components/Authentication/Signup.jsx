@@ -32,7 +32,7 @@ const Signup = () => {
       })
         .then((res) => res.json())
         .then((data) => {
-          setPic(data.url.toString());
+          setPic(data.secure_url || data.url);
           setLoading(false);
         })
         .catch((err) => {
