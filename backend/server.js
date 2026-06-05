@@ -94,10 +94,14 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Real-time read receipts: notify sender that their messages were seen
+  // Real-time read receipts: broadcast to the whole chat room so sender's ticks turn blue
   socket.on('messages-seen', ({ chatId, seenBy, senderId }) => {
-    // Notify the original sender that their messages have been read
-    socket.in(senderId).emit('messages-seen', { chatId, seenBy });
+    // Broadcast to the entire chat room — every connected member gets updated ticks
+    socket.in(chatId).emit('messages-seen', { chatId, seenBy });
+    // Also notify a specific sender if provided (legacy support)
+    if (senderId && senderId !== 'broadcast') {
+      socket.in(senderId).emit('messages-seen', { chatId, seenBy });
+    }
   });
 
   // WebRTC Signaling Events

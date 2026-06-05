@@ -345,8 +345,8 @@ const ChatBox = () => {
         setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== toastId)), 5000);
       } else {
         setMessages((prev) => [...prev, newMsg]);
-        // Mark as read since we're viewing the chat
-        markReadAPI(newMsg.chat._id, newMsg.sender?._id);
+        // mark as read since we're viewing this chat
+        markReadAPI(newMsg.chat._id);
       }
     };
 
@@ -372,15 +372,15 @@ const ChatBox = () => {
     };
   }, [notification]);
 
-  // Mark messages as read via API + emit socket event
-  const markReadAPI = async (chatId, senderId) => {
+  // Mark messages as read via API + emit socket event to ALL senders
+  const markReadAPI = async (chatId) => {
     try {
-      await axios.put(`/api/message/read/${chatId}`, {}, {
+      const { data: updatedMessages } = await axios.put(`/api/message/read/${chatId}`, {}, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
-      // Notify the sender in real time
-      if (senderId) {
-        socket.emit('messages-seen', { chatId, seenBy: user._id, senderId });
+      // Notify every unique sender in real time so their ticks turn blue
+      if (socket && chatId) {
+        socket.emit('messages-seen', { chatId, seenBy: user._id, senderId: 'broadcast' });
       }
     } catch (e) {
       console.error('markRead failed', e);
@@ -398,8 +398,8 @@ const ChatBox = () => {
       setMessages(data);
       setLoading(false);
       socket.emit('join chat', selectedChat._id);
-      // Mark all unread messages as read
-      await markReadAPI(selectedChat._id, null);
+      // Mark all unread messages as read and notify senders
+      await markReadAPI(selectedChat._id);
     } catch { setLoading(false); }
   };
 
