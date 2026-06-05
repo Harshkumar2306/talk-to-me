@@ -130,20 +130,67 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Group Call Events (Jitsi-based — server just handles notifications)
-  socket.on('group-call-start', ({ chatId, chatName, callerInfo, type, chatUserIds }) => {
-    // Ring every member via their personal socket room
-    chatUserIds.forEach((userId) => {
-      if (userId !== callerInfo.userId) {
-        socket.in(userId).emit('incoming-group-call', { chatId, chatName, callerInfo, type });
+  // ─── Group Call: Proper WebRTC Mesh ───
+  // groupCallRooms: chatId → Map(userId → { socketId, name, pic })
+
+  // Initiator starts the call
+  socket.on('gc-start', ({ chatId, chatName, callerInfo, type, chatUserIds }) => {
+    if (!groupCallRooms.has(chatId)) groupCallRooms.set(chatId, new Map());
+    groupCallRooms.get(chatId).set(callerInfo.userId, { socketId: socket.id, ...callerInfo });
+
+    // Ring every member individually via their personal socket room
+    chatUserIds.forEach((uid) => {
+      if (uid !== callerInfo.userId) {
+        socket.in(uid).emit('gc-incoming', { chatId, chatName, callerInfo, type });
       }
     });
   });
 
-  socket.on('group-call-end', ({ chatId, chatUserIds }) => {
-    // Tell everyone the call is over
-    chatUserIds.forEach((userId) => {
-      socket.in(userId).emit('group-call-ended', { chatId });
+  // Any user joins the call room
+  socket.on('gc-join', ({ chatId, userInfo }) => {
+    if (!groupCallRooms.has(chatId)) groupCallRooms.set(chatId, new Map());
+    const room = groupCallRooms.get(chatId);
+
+    // Send the newcomer the list of who is already in the call
+    const existing = Array.from(room.values()).filter((p) => p.userId !== userInfo.userId);
+    socket.emit('gc-peers', { peers: existing });
+
+    // Register newcomer
+    room.set(userInfo.userId, { socketId: socket.id, ...userInfo });
+
+    // Notify each existing participant individually (they will initiate peers to newcomer)
+    existing.forEach((participant) => {
+      socket.in(participant.userId).emit('gc-user-joined', { userInfo: { ...userInfo, socketId: socket.id } });
+    });
+  });
+
+  // Route a WebRTC signal from one peer to another (by userId → socketId)
+  socket.on('gc-signal', ({ to, from, signal, chatId }) => {
+    const room = groupCallRooms.get(chatId);
+    if (room && room.has(to)) {
+      io.to(room.get(to).socketId).emit('gc-signal', { from, signal });
+    }
+  });
+
+  // A user voluntarily leaves
+  socket.on('gc-leave', ({ chatId, userId }) => {
+    const room = groupCallRooms.get(chatId);
+    if (room) {
+      room.delete(userId);
+      if (room.size === 0) groupCallRooms.delete(chatId);
+    }
+    // Tell remaining participants
+    const remaining = room ? Array.from(room.values()) : [];
+    remaining.forEach((p) => {
+      io.to(p.socketId).emit('gc-user-left', { userId });
+    });
+  });
+
+  // Initiator ends call for everyone
+  socket.on('gc-end', ({ chatId, chatUserIds }) => {
+    groupCallRooms.delete(chatId);
+    chatUserIds.forEach((uid) => {
+      socket.in(uid).emit('gc-ended', { chatId });
     });
   });
 
