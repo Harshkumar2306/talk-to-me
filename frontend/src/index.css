@@ -30,6 +30,15 @@
   --msg-in: #ffffff;
 }
 
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Lock the external frame from scrolling */
+  overscroll-behavior-y: none; /* Prevent bounce on mobile */
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);

@@ -4,7 +4,7 @@ import ChatPage from './pages/ChatPage';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+    <div className="h-[100dvh] w-full bg-gray-50 text-gray-900 font-sans overflow-hidden">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/chats" element={<ChatPage />} />
