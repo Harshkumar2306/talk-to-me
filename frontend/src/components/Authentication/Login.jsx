@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
+const GUEST_EMAIL = 'guest@example.com';
+const GUEST_PASSWORD = '123456';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,28 +14,19 @@ const Login = () => {
   
   const navigate = useNavigate();
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    if (!email || !password) {
+  const doLogin = async (loginEmail, loginPassword) => {
+    if (!loginEmail || !loginPassword) {
       setError('Please fill all the fields');
       return;
     }
-
     try {
       setLoading(true);
       setError('');
-      const config = {
-        headers: {
-          'Content-type': 'application/json',
-        },
-      };
-
       const { data } = await axios.post(
         '/api/user/login',
-        { email, password },
-        config
+        { email: loginEmail, password: loginPassword },
+        { headers: { 'Content-type': 'application/json' } }
       );
-
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate('/chats');
     } catch (error) {
@@ -40,6 +34,17 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    await doLogin(email, password);
+  };
+
+  const guestLogin = async () => {
+    setEmail(GUEST_EMAIL);
+    setPassword(GUEST_PASSWORD);
+    await doLogin(GUEST_EMAIL, GUEST_PASSWORD);
   };
 
   return (
@@ -82,13 +87,11 @@ const Login = () => {
 
       <button
         type="button"
-        onClick={() => {
-          setEmail('guest@example.com');
-          setPassword('123456');
-        }}
-        className="flex w-full items-center justify-center rounded-lg bg-white/10 p-3 font-semibold text-white transition-all hover:bg-white/20"
+        disabled={loading}
+        onClick={guestLogin}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 p-3 font-semibold text-white transition-all hover:bg-white/20 disabled:opacity-50"
       >
-        Get Guest User Credentials
+        {loading ? <Loader2 className="animate-spin h-4 w-4" /> : '⚡ Continue as Guest'}
       </button>
     </form>
   );

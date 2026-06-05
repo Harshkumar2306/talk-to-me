@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Login from '../components/Authentication/Login';
 import Signup from '../components/Authentication/Signup';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Zap, Shield, Globe } from 'lucide-react';
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -17,26 +17,12 @@ const HomePage = () => {
   }, [navigate]);
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a] text-white overflow-hidden relative">
+    <div className="flex min-h-screen min-h-[100dvh] bg-[#0f172a] text-white overflow-hidden relative">
       {/* Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/30 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/20 blur-[120px]" />
 
       <div className="container mx-auto flex flex-col items-center justify-center p-6 z-10">
-        {/* Logo at the top */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex items-center gap-3 mb-8"
-        >
-          <div className="p-3 bg-brand-500 rounded-2xl shadow-lg shadow-brand-500/50">
-            <MessageSquare size={32} className="text-white" />
-          </div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-            ChatSphere
-          </h1>
-        </motion.div>
 
         {/* Auth Box */}
         <motion.div 

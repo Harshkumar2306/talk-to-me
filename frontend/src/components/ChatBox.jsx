@@ -7,7 +7,7 @@ import EmojiPicker from 'emoji-picker-react';
 import {
   Smile, Paperclip, Mic, Send, Phone, Video, MoreVertical,
   Loader2, MessageSquare, X, Download, FileText, Image,
-  StopCircle, Trash2, Copy, Reply, Check, CheckCheck, Users
+  StopCircle, Trash2, Copy, Reply, Check, CheckCheck, Users, ChevronLeft
 } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -542,6 +542,13 @@ const ChatBox = () => {
       {/* ── Header ── */}
       <div className={`px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-10 shadow-sm`}>
         <div className="flex items-center gap-3">
+          {/* Mobile back button */}
+          <button
+            className="md:hidden p-1 mr-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            onClick={() => setSelectedChat(null)}
+          >
+            <ChevronLeft size={24} />
+          </button>
           <div className="relative">
             {selectedChat.isGroupChat ? (
               <button

@@ -78,10 +78,17 @@ export const CallProvider = ({ children }) => {
 
   const getMedia = useCallback(async (type) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: type === 'video' ? { width: 1280, height: 720, facingMode: 'user' } : false,
-      });
+      const constraints = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        },
+        video: type === 'video'
+          ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
+          : false,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       localStreamRef.current = stream;
       if (myVideoNodeRef.current) {
         myVideoNodeRef.current.srcObject = stream;
@@ -98,6 +105,8 @@ export const CallProvider = ({ children }) => {
     remoteStreamRef.current = stream;
     if (userVideoNodeRef.current) {
       userVideoNodeRef.current.srcObject = stream;
+      // Ensure audio plays — crucial for mobile browsers
+      userVideoNodeRef.current.play().catch((e) => console.warn('autoplay blocked:', e));
     }
   }, []);
 
@@ -139,7 +148,15 @@ export const CallProvider = ({ children }) => {
       callWithId: userToCall,
     }));
 
-    const peer = new Peer({ initiator: true, trickle: false, stream });
+    const peerConfig = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+      ],
+    };
+
+    const peer = new Peer({ initiator: true, trickle: false, stream, config: peerConfig });
 
     peer.on('signal', (signalData) => {
       socketRef.current.emit('call-user', {
@@ -175,7 +192,15 @@ export const CallProvider = ({ children }) => {
 
     setCallState((prev) => ({ ...prev, status: 'connected' }));
 
-    const peer = new Peer({ initiator: false, trickle: false, stream });
+    const peerConfig = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+      ],
+    };
+
+    const peer = new Peer({ initiator: false, trickle: false, stream, config: peerConfig });
 
     peer.on('signal', (signalData) => {
       socketRef.current.emit('answer-call', { signal: signalData, to: callerId });
