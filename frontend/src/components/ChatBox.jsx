@@ -744,7 +744,7 @@ const ChatBox = () => {
                 value={newMessage}
                 onChange={typingHandler}
                 onKeyDown={sendMessage}
-                className={`w-full bg-transparent text-sm ${isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'} focus:outline-none`}
+                className={`w-full bg-transparent text-base ${isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'} focus:outline-none`}
               />
             </div>
 
