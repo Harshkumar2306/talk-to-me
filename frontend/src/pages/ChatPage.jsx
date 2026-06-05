@@ -21,10 +21,9 @@ const ChatPage = () => {
       <CallWindow />
       {user && <Sidebar />}
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* pb-16 md:pb-0 clears the mobile bottom nav bar */}
+      <div className="flex flex-1 overflow-hidden pb-16 md:pb-0">
         {user && (
-          /* On mobile: show chat list ONLY when no chat is selected.
-             On desktop: always show the sidebar (w-1/3). */
           <div
             className={`
               flex flex-col border-r
@@ -40,8 +39,6 @@ const ChatPage = () => {
         )}
 
         {user && (
-          /* On mobile: show chat box ONLY when a chat is selected.
-             On desktop: always show it (flex-1). */
           <div
             className={`
               flex-col relative overflow-hidden
@@ -53,6 +50,7 @@ const ChatPage = () => {
         )}
       </div>
     </div>
+
   );
 };
 
