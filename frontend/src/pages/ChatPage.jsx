@@ -6,6 +6,8 @@ import MyChats from '../components/MyChats';
 import ChatBox from '../components/ChatBox';
 import IncomingCallModal from '../components/Call/IncomingCallModal';
 import CallWindow from '../components/Call/CallWindow';
+import GroupCallWindow from '../components/Call/GroupCallWindow';
+import GroupIncomingCallModal from '../components/Call/GroupIncomingCallModal';
 
 const ChatPage = () => {
   const { user, selectedChat } = ChatState();
@@ -19,6 +21,8 @@ const ChatPage = () => {
     >
       <IncomingCallModal />
       <CallWindow />
+      <GroupCallWindow />
+      <GroupIncomingCallModal />
       {user && <Sidebar />}
 
       {/* pb-16 md:pb-0 clears the mobile bottom nav bar */}

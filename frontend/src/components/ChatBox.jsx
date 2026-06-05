@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ChatState } from '../Context/ChatProvider';
 import { CallState } from '../Context/CallProvider';
+import { GroupCallState } from '../Context/GroupCallProvider';
 import { useTheme } from '../Context/ThemeProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import EmojiPicker from 'emoji-picker-react';
@@ -267,6 +268,7 @@ const ChatBox = () => {
 
   const { selectedChat, user, setChats, notification, setNotification, setSelectedChat } = ChatState();
   const { startCall, registerUser } = CallState();
+  const { startGroupCall } = GroupCallState();
   const { isDark } = useTheme();
 
   useEffect(() => {
@@ -611,6 +613,27 @@ const ChatBox = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => startCall(sender._id, user, 'video')}
+                className="p-2.5 text-brand-400 hover:text-white hover:bg-brand-500/20 rounded-xl transition-colors"
+              >
+                <Video size={19} />
+              </motion.button>
+            </>
+          )}
+
+          {selectedChat.isGroupChat && (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => startGroupCall(selectedChat._id, 'audio')}
+                className="p-2.5 text-brand-400 hover:text-white hover:bg-brand-500/20 rounded-xl transition-colors"
+              >
+                <Phone size={19} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => startGroupCall(selectedChat._id, 'video')}
                 className="p-2.5 text-brand-400 hover:text-white hover:bg-brand-500/20 rounded-xl transition-colors"
               >
                 <Video size={19} />

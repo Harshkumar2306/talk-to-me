@@ -60,6 +60,8 @@ const server = app.listen(PORT, () => {
   console.log(`Server started on PORT ${PORT}`);
 });
 
+const groupCallRooms = new Map();
+
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
@@ -126,6 +128,44 @@ io.on('connection', (socket) => {
     if (data.to) {
       socket.in(data.to).emit('call-ended');
     }
+  });
+
+  // Group Call Events
+  socket.on('group-call-start', ({ chatId, callerInfo, type }) => {
+    if (!groupCallRooms.has(chatId)) groupCallRooms.set(chatId, new Map());
+    groupCallRooms.get(chatId).set(callerInfo.userId, { socketId: socket.id, ...callerInfo });
+    socket.in(chatId).emit('incoming-group-call', { chatId, callerInfo, type });
+  });
+
+  socket.on('group-call-join', ({ chatId, userInfo }) => {
+    if (!groupCallRooms.has(chatId)) groupCallRooms.set(chatId, new Map());
+    const room = groupCallRooms.get(chatId);
+    const existingParticipants = Array.from(room.values());
+    socket.emit('group-call-participants', { participants: existingParticipants });
+    room.set(userInfo.userId, { socketId: socket.id, ...userInfo });
+    socket.in(chatId).emit('user-joined-group-call', { userInfo: { ...userInfo, socketId: socket.id } });
+  });
+
+  socket.on('group-call-signal', ({ to, from, signal, chatId }) => {
+    const room = groupCallRooms.get(chatId);
+    if (room && room.has(to)) {
+      const participant = room.get(to);
+      io.to(participant.socketId).emit('group-call-signal', { from, signal });
+    }
+  });
+
+  socket.on('group-call-leave', ({ chatId, userId }) => {
+    const room = groupCallRooms.get(chatId);
+    if (room) {
+      room.delete(userId);
+      if (room.size === 0) groupCallRooms.delete(chatId);
+    }
+    socket.in(chatId).emit('user-left-group-call', { userId });
+  });
+
+  socket.on('group-call-end', ({ chatId }) => {
+    groupCallRooms.delete(chatId);
+    io.in(chatId).emit('group-call-ended', { chatId });
   });
 
   socket.off('setup', () => {

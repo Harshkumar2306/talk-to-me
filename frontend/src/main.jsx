@@ -5,6 +5,7 @@ import './index.css';
 import { BrowserRouter } from 'react-router-dom';
 import ChatProvider from './Context/ChatProvider.jsx';
 import { CallProvider } from './Context/CallProvider.jsx';
+import { GroupCallProvider } from './Context/GroupCallProvider.jsx';
 import { ThemeProvider } from './Context/ThemeProvider.jsx';
 import axios from 'axios';
 
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ChatProvider>
       <ThemeProvider>
         <CallProvider>
-          <App />
+          <GroupCallProvider>
+            <App />
+          </GroupCallProvider>
         </CallProvider>
       </ThemeProvider>
     </ChatProvider>
