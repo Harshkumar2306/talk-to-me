@@ -205,7 +205,19 @@ io.on('connection', (socket) => {
     const userId = onlineUsers.get(socket.id);
     if (userId) {
       onlineUsers.delete(socket.id);
-      socket.broadcast.emit('user-offline', userId);
+      
+      // Check if the user has other active tabs/sockets
+      let isStillOnline = false;
+      for (let uid of onlineUsers.values()) {
+        if (uid === userId) {
+          isStillOnline = true;
+          break;
+        }
+      }
+      
+      if (!isStillOnline) {
+        socket.broadcast.emit('user-offline', userId);
+      }
     }
     console.log('USER DISCONNECTED');
   });

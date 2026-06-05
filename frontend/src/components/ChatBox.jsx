@@ -297,10 +297,15 @@ const ChatBox = () => {
   // Dismiss toast helper
   const dismissToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
-  // Socket init
+  // Socket init with Live Presence (Visibility tracking)
   useEffect(() => {
     socket = io(ENDPOINT);
-    socket.emit('setup', user);
+    
+    // Auto-setup when socket connects (handles initial connect and reconnects)
+    socket.on('connect', () => {
+      socket.emit('setup', user);
+    });
+
     socket.on('connected', () => setSocketConnected(true));
     
     // Online presence tracking
@@ -310,7 +315,21 @@ const ChatBox = () => {
 
     socket.on('typing', () => setIsTyping(true));
     socket.on('stop typing', () => setIsTyping(false));
-    return () => socket.disconnect();
+
+    // Handle mobile lock screen / tab switch for instant offline status
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        socket.disconnect();
+      } else if (document.visibilityState === 'visible') {
+        socket.connect();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      socket.disconnect();
+    };
   }, [user, setOnlineUsers]);
 
   // Message listener + real-time read receipts
