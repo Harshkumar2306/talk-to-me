@@ -1,149 +1,206 @@
 import React, { useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Phone } from 'lucide-react';
 import { GroupCallState } from '../../Context/GroupCallProvider';
 import { ChatState } from '../../Context/ChatProvider';
 
-// Single video tile for a participant
-const ParticipantTile = ({ userId, name, pic, stream, isDark }) => {
+// ── Remote participant tile ──
+const ParticipantTile = ({ userId, name, pic, stream }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(e => console.warn('play blocked:', e));
+      videoRef.current.play().catch((e) => console.warn('[GC] remote play blocked:', e));
     }
   }, [stream]);
 
+  const hasVideo = stream && stream.getVideoTracks().length > 0;
+
   return (
-    <div className={`relative rounded-2xl overflow-hidden flex items-center justify-center ${
-      isDark ? 'bg-[#1e293b]' : 'bg-gray-200'
-    }`}>
-      {stream ? (
-        <video ref={videoRef} autoPlay playsInline muted={false} className="w-full h-full object-cover" />
+    <div className="relative rounded-2xl overflow-hidden bg-[#1e293b] flex items-center justify-center min-h-[140px]">
+      {hasVideo ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+        />
       ) : (
-        <div className="flex flex-col items-center gap-2">
-          <img src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
-            alt={name} className="w-16 h-16 rounded-full object-cover border-2 border-brand-500" />
-          <p className="text-white text-sm font-medium">{name}</p>
-          <p className="text-gray-400 text-xs">Connecting...</p>
+        <div className="flex flex-col items-center gap-3 p-4">
+          <img
+            src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+            alt={name}
+            className="w-16 h-16 rounded-full object-cover border-2 border-brand-500"
+          />
+          <p className="text-white text-sm font-semibold">{name}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-gray-400 text-xs">{stream ? 'Audio only' : 'Connecting...'}</span>
+          </div>
         </div>
       )}
-      <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-0.5 rounded-lg">
+      {/* Name tag */}
+      <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-lg">
         <span className="text-white text-xs font-medium">{name}</span>
       </div>
     </div>
   );
 };
 
-const LocalTile = ({ localStream, name, pic, isDark }) => {
+// ── Local (self) tile ──
+const LocalTile = ({ localStream, name, pic, isVideoOff }) => {
   const videoRef = useRef(null);
+
   useEffect(() => {
     if (videoRef.current && localStream) {
       videoRef.current.srcObject = localStream;
     }
   }, [localStream]);
+
+  const hasVideo = localStream && localStream.getVideoTracks().length > 0 && !isVideoOff;
+
   return (
-    <div className={`relative rounded-2xl overflow-hidden flex items-center justify-center ${
-      isDark ? 'bg-[#0f172a]' : 'bg-gray-300'
-    }`}>
-      {localStream && localStream.getVideoTracks().length > 0 ? (
-        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+    <div className="relative rounded-2xl overflow-hidden bg-[#0f172a] flex items-center justify-center min-h-[140px] ring-2 ring-brand-500/40">
+      {hasVideo ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
+        />
       ) : (
-        <div className="flex flex-col items-center gap-2">
-          <img src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
-            alt={name} className="w-16 h-16 rounded-full object-cover border-2 border-green-400" />
-          <p className="text-white text-sm font-medium">{name}</p>
+        <div className="flex flex-col items-center gap-3 p-4">
+          <img
+            src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+            alt={name}
+            className="w-16 h-16 rounded-full object-cover border-2 border-green-400"
+          />
+          <p className="text-white text-sm font-semibold">{name}</p>
         </div>
       )}
-      <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-0.5 rounded-lg">
-        <span className="text-white text-xs font-medium">You</span>
+      <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-lg">
+        <span className="text-green-400 text-xs font-medium">You</span>
       </div>
     </div>
   );
 };
 
+// ── Control Button ──
+const CtrlBtn = ({ onClick, active, danger, children }) => (
+  <button
+    onClick={onClick}
+    className={`p-4 rounded-full transition-all shadow-lg ${
+      danger
+        ? 'bg-red-500 hover:bg-red-600'
+        : active
+        ? 'bg-red-500 hover:bg-red-600'
+        : 'bg-white/10 hover:bg-white/20'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+// ── Main GroupCallWindow ──
 export default function GroupCallWindow() {
-  const { gcState, participants, isMuted, isVideoOff, localStream,
-    leaveGroupCall, endGroupCallForAll, toggleMute, toggleVideo } = GroupCallState();
+  const {
+    gcState, participants, isMuted, isVideoOff, localStream,
+    leaveGroupCall, endGroupCallForAll, toggleMute, toggleVideo,
+  } = GroupCallState();
   const { user } = ChatState();
-  const isDark = true; // Always dark for call UI
 
   if (!gcState.active) return null;
 
-  const allTiles = [
-    { userId: 'me', name: user.name, pic: user.pic, stream: null, isLocal: true },
-    ...participants,
-  ];
+  const isVideoCall = gcState.type === 'video';
+  const allCount = participants.length + 1; // +1 for local
 
-  // Grid layout based on count
-  const count = allTiles.length;
-  const gridClass = count <= 1 ? 'grid-cols-1'
-    : count <= 2 ? 'grid-cols-2'
-    : count <= 4 ? 'grid-cols-2'
-    : 'grid-cols-3';
+  // Responsive grid class
+  const gridClass =
+    allCount === 1 ? 'grid-cols-1' :
+    allCount === 2 ? 'grid-cols-1 sm:grid-cols-2' :
+    allCount <= 4 ? 'grid-cols-2' :
+    'grid-cols-2 sm:grid-cols-3';
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-[#0f172a] flex flex-col"
+      className="fixed inset-0 z-[55] bg-[#0a0f1d] flex flex-col"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-brand-500/20 rounded-xl">
             <Users size={20} className="text-brand-400" />
           </div>
           <div>
-            <h2 className="text-white font-bold">Group {gcState.type === 'video' ? 'Video' : 'Audio'} Call</h2>
-            <p className="text-gray-400 text-xs">{allTiles.length} participant{allTiles.length !== 1 ? 's' : ''}</p>
+            <h2 className="text-white font-bold text-sm md:text-base">
+              Group {isVideoCall ? 'Video' : 'Audio'} Call
+            </h2>
+            <p className="text-gray-400 text-xs">
+              {allCount} participant{allCount !== 1 ? 's' : ''}
+            </p>
           </div>
+        </div>
+        {/* Live indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 rounded-full">
+          <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+          <span className="text-red-400 text-xs font-semibold">LIVE</span>
         </div>
       </div>
 
-      {/* Video Grid */}
+      {/* ── Video/Audio Grid ── */}
       <div className={`flex-1 grid ${gridClass} gap-3 p-4 overflow-auto`}>
-        {allTiles.map(tile =>
-          tile.isLocal ? (
-            <LocalTile key="me" localStream={localStream} name={user.name} pic={user.pic} isDark={isDark} />
-          ) : (
-            <ParticipantTile key={tile.userId} {...tile} isDark={isDark} />
-          )
-        )}
+        {/* Local tile first */}
+        <LocalTile
+          localStream={localStream}
+          name={user?.name}
+          pic={user?.pic}
+          isVideoOff={isVideoOff}
+        />
+        {/* Remote participants */}
+        {participants.map((p) => (
+          <ParticipantTile
+            key={p.userId}
+            userId={p.userId}
+            name={p.name}
+            pic={p.pic}
+            stream={p.stream}
+          />
+        ))}
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-4 px-6 py-5 border-t border-white/10">
-        <button onClick={toggleMute}
-          className={`p-4 rounded-full transition-all ${
-            isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-white/10 hover:bg-white/20'
-          }`}>
-          {isMuted ? <MicOff size={22} className="text-white" /> : <Mic size={22} className="text-white" />}
-        </button>
+      {/* ── Controls ── */}
+      <div className="flex-shrink-0 border-t border-white/10 py-5 px-6">
+        <div className="flex items-center justify-center gap-4">
+          {/* Mute */}
+          <CtrlBtn onClick={toggleMute} active={isMuted}>
+            {isMuted
+              ? <MicOff size={22} className="text-white" />
+              : <Mic size={22} className="text-white" />}
+          </CtrlBtn>
 
-        {gcState.type === 'video' && (
-          <button onClick={toggleVideo}
-            className={`p-4 rounded-full transition-all ${
-              isVideoOff ? 'bg-red-500 hover:bg-red-600' : 'bg-white/10 hover:bg-white/20'
-            }`}>
-            {isVideoOff ? <VideoOff size={22} className="text-white" /> : <Video size={22} className="text-white" />}
-          </button>
-        )}
+          {/* Camera (only for video calls) */}
+          {isVideoCall && (
+            <CtrlBtn onClick={toggleVideo} active={isVideoOff}>
+              {isVideoOff
+                ? <VideoOff size={22} className="text-white" />
+                : <Video size={22} className="text-white" />}
+            </CtrlBtn>
+          )}
 
-        {/* Leave (for non-initiator) or End for All (for initiator) */}
-        {gcState.isInitiator ? (
-          <button onClick={endGroupCallForAll}
-            className="p-4 bg-red-500 hover:bg-red-600 rounded-full transition-all">
+          {/* Leave / End */}
+          <CtrlBtn onClick={gcState.isInitiator ? endGroupCallForAll : leaveGroupCall} danger>
             <PhoneOff size={22} className="text-white" />
-          </button>
-        ) : (
-          <button onClick={leaveGroupCall}
-            className="p-4 bg-red-500 hover:bg-red-600 rounded-full transition-all">
-            <PhoneOff size={22} className="text-white" />
-          </button>
-        )}
+          </CtrlBtn>
+        </div>
+
+        <p className="text-center text-gray-500 text-xs mt-3">
+          {gcState.isInitiator ? 'Tap red button to end for everyone' : 'Tap red button to leave'}
+        </p>
       </div>
     </motion.div>
   );
