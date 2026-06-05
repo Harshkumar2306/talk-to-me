@@ -1,27 +1,23 @@
-import bcrypt from 'bcrypt';
 import User from '../models/userModel.js';
 
 /**
  * Seeds the database with a guest user on startup.
- * If the guest user already exists, it does nothing.
+ * Always deletes and recreates to ensure password is correct.
  */
 const seedGuestUser = async () => {
   try {
-    const existing = await User.findOne({ email: 'guest@example.com' });
-    if (existing) {
-      console.log('✅ Guest user already exists.');
-      return;
-    }
+    // Delete old guest user (might have bad double-hashed password from previous run)
+    await User.deleteOne({ email: 'guest@example.com' });
 
-    const hashedPassword = await bcrypt.hash('123456', 10);
+    // Recreate with plain text — the pre-save hook hashes it correctly
     await User.create({
       name: 'Guest User',
       email: 'guest@example.com',
-      password: hashedPassword,
+      password: '123456',
       pic: 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
     });
 
-    console.log('🌱 Guest user created successfully!');
+    console.log('🌱 Guest user seeded successfully!');
   } catch (error) {
     console.error('❌ Failed to seed guest user:', error.message);
   }
