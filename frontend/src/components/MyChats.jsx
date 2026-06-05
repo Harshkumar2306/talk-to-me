@@ -12,7 +12,7 @@ const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' 
 const MyChats = () => {
   const [loggedUser, setLoggedUser] = useState();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const { selectedChat, setSelectedChat, user, chats, setChats, notification } = ChatState();
+  const { selectedChat, setSelectedChat, user, chats, setChats, notification, onlineUsers } = ChatState();
   const { isDark } = useTheme();
 
   const fetchChats = async () => {
@@ -116,7 +116,9 @@ const MyChats = () => {
                       <Users className="text-white" size={18} />
                     </div>
                   )}
-                  <div className={`absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 ${isSelected ? 'border-brand-600' : isDark ? 'border-[#1e293b]' : 'border-white'}`} />
+                  {!chat.isGroupChat && onlineUsers?.includes(chat.users.find(u => u._id !== loggedUser?._id)?._id) && (
+                    <div className={`absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 ${isSelected ? 'border-brand-600' : isDark ? 'border-[#1e293b]' : 'border-white'}`} />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">

@@ -61,7 +61,7 @@ const server = app.listen(PORT, () => {
 });
 
 const groupCallRooms = new Map();
-
+const onlineUsers = new Map(); // socket.id -> userId
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
@@ -74,7 +74,14 @@ io.on('connection', (socket) => {
 
   socket.on('setup', (userData) => {
     socket.join(userData._id);
+    onlineUsers.set(socket.id, userData._id);
     socket.emit('connected');
+    
+    // Broadcast to everyone else that this user is online
+    socket.broadcast.emit('user-online', userData._id);
+    
+    // Send the current list of online users to the newly connected user
+    socket.emit('online-users', Array.from(new Set(onlineUsers.values())));
   });
 
   socket.on('join chat', (room) => {
@@ -194,8 +201,12 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.off('setup', () => {
+  socket.on('disconnect', () => {
+    const userId = onlineUsers.get(socket.id);
+    if (userId) {
+      onlineUsers.delete(socket.id);
+      socket.broadcast.emit('user-offline', userId);
+    }
     console.log('USER DISCONNECTED');
-    socket.leave(userData._id);
   });
 });

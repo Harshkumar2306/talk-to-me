@@ -265,8 +265,7 @@ const ChatBox = () => {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const emojiRef = useRef(null);
-
-  const { selectedChat, user, setChats, notification, setNotification, setSelectedChat } = ChatState();
+  const { selectedChat, user, setChats, notification, setNotification, setSelectedChat, onlineUsers, setOnlineUsers } = ChatState();
   const { startCall, registerUser } = CallState();
   const { startGroupCall } = GroupCallState();
   const { isDark } = useTheme();
@@ -303,10 +302,16 @@ const ChatBox = () => {
     socket = io(ENDPOINT);
     socket.emit('setup', user);
     socket.on('connected', () => setSocketConnected(true));
+    
+    // Online presence tracking
+    socket.on('online-users', (users) => setOnlineUsers(users));
+    socket.on('user-online', (userId) => setOnlineUsers((prev) => [...new Set([...prev, userId])]));
+    socket.on('user-offline', (userId) => setOnlineUsers((prev) => prev.filter(id => id !== userId)));
+
     socket.on('typing', () => setIsTyping(true));
     socket.on('stop typing', () => setIsTyping(false));
     return () => socket.disconnect();
-  }, [user]);
+  }, [user, setOnlineUsers]);
 
   // Message listener + real-time read receipts
   useEffect(() => {
@@ -592,7 +597,12 @@ const ChatBox = () => {
               <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                 {selectedChat.isGroupChat
                   ? `${selectedChat.users?.length} members`
-                  : 'Online'}
+                  : onlineUsers.includes(getSender(user, selectedChat.users)?._id) ? (
+                      <span className="flex items-center gap-1 text-green-500 font-medium">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                        Online
+                      </span>
+                    ) : 'Offline'}
               </p>
             )}
           </div>
