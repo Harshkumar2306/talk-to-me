@@ -542,20 +542,20 @@ const ChatBox = () => {
       />
 
       {/* ── Header ── */}
-      <div className={`px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-10 shadow-sm`}>
-        <div className="flex items-center gap-3">
+      <div className={`px-3 md:px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-10 shadow-sm flex-shrink-0`}>
+        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
           {/* Mobile back button */}
           <button
-            className={`md:hidden p-1 mr-2 rounded-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-gray-900 hover:bg-black/10'} transition-all flex items-center justify-center`}
+            className={`md:hidden p-1 rounded-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-gray-900 hover:bg-black/10'} transition-all flex items-center justify-center flex-shrink-0`}
             onClick={() => setSelectedChat(null)}
           >
             <ChevronLeft size={28} />
           </button>
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             {selectedChat.isGroupChat ? (
               <button
                 onClick={() => setShowGroupInfo(true)}
-                className="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 via-brand-500 to-pink-500 flex items-center justify-center border-2 border-brand-500/40 hover:border-brand-400 transition-colors"
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-purple-500 via-brand-500 to-pink-500 flex items-center justify-center border-2 border-brand-500/40 hover:border-brand-400 transition-colors"
               >
                 <Users size={18} className="text-white" />
               </button>
@@ -564,15 +564,15 @@ const ChatBox = () => {
                 <img
                   src={sender?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
                   alt="Avatar"
-                  className="w-11 h-11 rounded-full object-cover border-2 border-brand-500/40"
+                  className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border-2 border-brand-500/40"
                 />
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#1e293b] rounded-full" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-green-400 border-2 border-[#1e293b] rounded-full" />
               </>
             )}
           </div>
-          <div>
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
             <h2
-              className={`font-bold text-base ${isDark ? 'text-white' : 'text-gray-900'} ${selectedChat.isGroupChat ? 'cursor-pointer hover:text-brand-400 transition-colors' : ''}`}
+              className={`font-bold text-sm md:text-base truncate ${isDark ? 'text-white' : 'text-gray-900'} ${selectedChat.isGroupChat ? 'cursor-pointer hover:text-brand-400 transition-colors' : ''}`}
               onClick={() => selectedChat.isGroupChat && setShowGroupInfo(true)}
             >
               {selectedChat.isGroupChat ? selectedChat.chatName : sender?.name}
@@ -596,7 +596,7 @@ const ChatBox = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {!selectedChat.isGroupChat && (
             <>
               <motion.button
