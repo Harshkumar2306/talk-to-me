@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ChatState } from '../Context/ChatProvider';
 import { useTheme } from '../Context/ThemeProvider';
 import axios from 'axios';
 import { Plus, Users, Mic, Image, FileText } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import CreateGroupModal from './Group/CreateGroupModal';
+import io from 'socket.io-client';
+
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
 
 const MyChats = () => {
   const [loggedUser, setLoggedUser] = useState();
@@ -27,6 +30,22 @@ const MyChats = () => {
     setLoggedUser(JSON.parse(localStorage.getItem('userInfo')));
     fetchChats();
   }, [chats.length]);
+
+  // Listen for real-time profile pic updates from other users
+  useEffect(() => {
+    const socket = io(ENDPOINT);
+    socket.on('user-pic-updated', ({ userId, pic }) => {
+      setChats((prevChats) =>
+        prevChats.map((chat) => ({
+          ...chat,
+          users: chat.users.map((u) =>
+            u._id === userId ? { ...u, pic } : u
+          ),
+        }))
+      );
+    });
+    return () => socket.disconnect();
+  }, []);
 
   const getSender = (lu, users) =>
     users[0]?._id === lu?._id ? users[1]?.name : users[0]?.name;

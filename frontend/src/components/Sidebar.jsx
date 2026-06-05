@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import SearchModal from './SearchModal';
 import axios from 'axios';
+import io from 'socket.io-client';
+
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
 
 const Sidebar = () => {
   const { user, setUser, notification, setNotification, setSelectedChat } = ChatState();
@@ -62,6 +65,11 @@ const Sidebar = () => {
       const updated = { ...user, pic: picUrl };
       localStorage.setItem('userInfo', JSON.stringify(updated));
       setUser(updated);
+
+      // Notify all other connected users in real time
+      const socket = io(ENDPOINT);
+      socket.emit('user-pic-updated', { userId: user._id, pic: picUrl });
+      setTimeout(() => socket.disconnect(), 2000);
     } catch (e) {
       console.error(e);
       alert('Failed to upload profile picture. Please try again.');
