@@ -17,7 +17,7 @@ const HomePage = () => {
   }, [navigate]);
 
   return (
-    <div className="flex min-h-screen min-h-[100dvh] bg-[#0f172a] text-white overflow-hidden relative">
+    <div className="flex flex-1 h-full w-full bg-[#0f172a] text-white overflow-hidden relative">
       {/* Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/30 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/20 blur-[120px]" />

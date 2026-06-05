@@ -13,7 +13,7 @@ const ChatPage = () => {
 
   return (
     <div
-      className={`flex h-screen h-[100dvh] overflow-hidden w-full relative transition-colors duration-300 ${
+      className={`flex flex-1 h-full w-full relative transition-colors duration-300 ${
         isDark ? 'bg-[#0f172a] text-white' : 'bg-gray-100 text-gray-900'
       }`}
     >
