@@ -96,3 +96,23 @@ export const updateUserPic = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+//@description     Update user name
+//@route           PUT /api/user/update-name
+//@access          Protected
+export const updateUserName = async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ message: 'Name cannot be empty' });
+  }
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { name: name.trim() },
+      { new: true }
+    ).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

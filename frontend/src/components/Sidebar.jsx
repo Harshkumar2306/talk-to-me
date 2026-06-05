@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageSquare, Search, Bell, Settings, LogOut, Sun, Moon,
-  User, Camera, X, ChevronRight, Loader2, Shield, Volume2, Palette
+  User, Camera, X, ChevronRight, Loader2, Shield, Pencil, Check
 } from 'lucide-react';
 import SearchModal from './SearchModal';
 import axios from 'axios';
@@ -25,7 +25,11 @@ const Sidebar = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [savingName, setSavingName] = useState(false);
   const picInputRef = useRef(null);
+  const nameInputRef = useRef(null);
 
   const logoutHandler = () => {
     localStorage.removeItem('userInfo');
@@ -68,6 +72,29 @@ const Sidebar = () => {
       console.error(e);
       alert('Failed to upload profile picture. Please try again.');
     } finally { setUploadingPic(false); }
+  };
+
+  const handleNameSave = async () => {
+    if (!newName.trim() || newName.trim() === user.name) {
+      setEditingName(false);
+      return;
+    }
+    try {
+      setSavingName(true);
+      await axios.put('/api/user/update-name',
+        { name: newName.trim() },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      const updated = { ...user, name: newName.trim() };
+      localStorage.setItem('userInfo', JSON.stringify(updated));
+      setUser(updated);
+      setEditingName(false);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to update name. Please try again.');
+    } finally {
+      setSavingName(false);
+    }
   };
 
   const bgClass = isDark ? 'bg-[#0f172a] border-white/10' : 'bg-white border-black/10';
@@ -368,7 +395,7 @@ const Sidebar = () => {
               <div className="px-6 pb-6">
                 <div className="relative -mt-12 mb-4 inline-block">
                   <div className="w-24 h-24 rounded-2xl border-4 border-[#1e293b] overflow-hidden shadow-xl">
-                    <img src={user?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} alt={user?.name} className="w-full h-full object-cover" />
+                    <img src={user?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
                   </div>
                   <button
                     onClick={() => picInputRef.current?.click()}
@@ -379,7 +406,36 @@ const Sidebar = () => {
                   </button>
                   <input ref={picInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePicUpload(e.target.files[0])} />
                 </div>
-                <h2 className="text-xl font-bold mb-1">{user?.name}</h2>
+                {editingName ? (
+                  <div className="flex items-center gap-2 mb-1">
+                    <input
+                      ref={nameInputRef}
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleNameSave(); if (e.key === 'Escape') setEditingName(false); }}
+                      autoFocus
+                      className={`flex-1 text-xl font-bold bg-transparent border-b-2 border-brand-500 focus:outline-none pb-0.5 ${isDark ? 'text-white' : 'text-gray-800'}`}
+                    />
+                    <button
+                      onClick={handleNameSave}
+                      disabled={savingName}
+                      className="p-1.5 bg-brand-500 hover:bg-brand-400 rounded-lg text-white flex-shrink-0 transition-colors"
+                    >
+                      {savingName ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mb-1 group">
+                    <h2 className="text-xl font-bold">{user?.name}</h2>
+                    <button
+                      onClick={() => { setNewName(user?.name || ''); setEditingName(true); }}
+                      className={`p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-700 hover:bg-black/5'}`}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  </div>
+                )}
                 <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{user?.email}</p>
                 <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-gray-50'}`}>
                   <div className="flex items-center gap-2 text-sm">
@@ -392,7 +448,6 @@ const Sidebar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
       {isSearchOpen && <SearchModal onClose={() => setIsSearchOpen(false)} />}
     </>
   );
