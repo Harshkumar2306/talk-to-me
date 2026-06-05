@@ -625,16 +625,18 @@ const ChatBox = () => {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => startGroupCall(selectedChat._id, 'audio')}
+                onClick={() => startGroupCall(selectedChat._id, selectedChat.chatName, 'audio', selectedChat.users)}
                 className="p-2.5 text-brand-400 hover:text-white hover:bg-brand-500/20 rounded-xl transition-colors"
+                title="Group Audio Call"
               >
                 <Phone size={19} />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => startGroupCall(selectedChat._id, 'video')}
+                onClick={() => startGroupCall(selectedChat._id, selectedChat.chatName, 'video', selectedChat.users)}
                 className="p-2.5 text-brand-400 hover:text-white hover:bg-brand-500/20 rounded-xl transition-colors"
+                title="Group Video Call"
               >
                 <Video size={19} />
               </motion.button>

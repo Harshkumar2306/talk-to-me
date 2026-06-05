@@ -10,43 +10,56 @@ export default function GroupIncomingCallModal() {
     <AnimatePresence>
       {incomingGroupCall && (
         <motion.div
-          initial={{ opacity: 0, y: -80, scale: 0.9 }}
+          initial={{ opacity: 0, y: -30, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -80, scale: 0.9 }}
+          exit={{ opacity: 0, y: -30, scale: 0.9 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          className="fixed top-4 right-4 z-[60] w-72 bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-[320px] max-w-[90vw] bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
         >
-          {/* Gradient top bar */}
-          <div className="h-1 bg-gradient-to-r from-brand-500 to-violet-500" />
-          <div className="p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-brand-500/20 rounded-xl">
-                <Users size={20} className="text-brand-400" />
+          {/* Animated gradient bar at top */}
+          <div className="h-1 bg-gradient-to-r from-brand-500 via-violet-500 to-pink-500" />
+
+          <div className="p-5">
+            {/* Icon + info */}
+            <div className="flex items-center gap-3 mb-5">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center">
+                  <Users size={22} className="text-white" />
+                </div>
+                {/* Pulse ring */}
+                <span className="absolute -inset-1 rounded-2xl border-2 border-brand-400 animate-ping opacity-40" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm truncate">
-                  {incomingGroupCall.callerInfo.name} started a
+                <p className="text-white font-bold truncate">
+                  {incomingGroupCall.callerInfo.name}
                 </p>
-                <p className="text-brand-400 text-xs font-medium">
-                  Group {incomingGroupCall.type === 'video' ? '📹 Video' : '🎤 Audio'} Call
+                <p className="text-brand-400 text-sm font-medium">
+                  {incomingGroupCall.type === 'video' ? '📹 Video' : '🎤 Audio'} Group Call
+                </p>
+                <p className="text-gray-500 text-xs truncate">
+                  in {incomingGroupCall.chatName}
                 </p>
               </div>
             </div>
+
+            {/* Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={declineGroupCall}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl transition-colors text-sm font-medium"
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500/15 hover:bg-red-500/30 text-red-400 rounded-xl transition-colors text-sm font-semibold border border-red-500/20"
               >
-                <PhoneOff size={16} /> Decline
+                <PhoneOff size={16} />
+                Decline
               </button>
               <button
                 onClick={joinGroupCall}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-medium"
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-semibold shadow-lg shadow-green-500/30"
               >
                 {incomingGroupCall.type === 'video'
                   ? <Video size={16} />
                   : <Phone size={16} />
-                } Join
+                }
+                Join Now
               </button>
             </div>
           </div>
