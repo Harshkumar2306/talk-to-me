@@ -546,10 +546,10 @@ const ChatBox = () => {
         <div className="flex items-center gap-3">
           {/* Mobile back button */}
           <button
-            className="md:hidden p-1 mr-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className={`md:hidden p-1 mr-2 rounded-lg ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/10' : 'text-gray-600 hover:text-gray-900 hover:bg-black/10'} transition-all flex items-center justify-center`}
             onClick={() => setSelectedChat(null)}
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={28} />
           </button>
           <div className="relative">
             {selectedChat.isGroupChat ? (
