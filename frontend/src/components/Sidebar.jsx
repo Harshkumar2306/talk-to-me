@@ -12,6 +12,8 @@ import axios from 'axios';
 import io from 'socket.io-client';
 
 const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
+// Use axios.defaults.baseURL so profile update hits Render, not Vercel
+const BACKEND = axios.defaults.baseURL || ENDPOINT;
 
 const Sidebar = () => {
   const { user, setUser, notification, setNotification, setSelectedChat } = ChatState();
@@ -49,16 +51,11 @@ const Sidebar = () => {
       const res = await fetch('https://api.cloudinary.com/v1_1/drnp7fcux/image/upload', { method: 'post', body: data });
       const json = await res.json();
       const picUrl = json.secure_url || json.url;
-      if (!picUrl) throw new Error('Upload failed');
-
-      await fetch('/api/user/update-pic', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({ pic: picUrl }),
-      });
+      // Save to backend database so other users see the updated pic
+      await axios.put('/api/user/update-pic',
+        { pic: picUrl },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
 
       const updated = { ...user, pic: picUrl };
       localStorage.setItem('userInfo', JSON.stringify(updated));
