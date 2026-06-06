@@ -11,12 +11,18 @@ const getIceServers = () => {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
   ];
-  if (import.meta.env.VITE_TURN_URL && import.meta.env.VITE_TURN_USERNAME && import.meta.env.VITE_TURN_CREDENTIAL) {
-    servers.push({
-      urls: import.meta.env.VITE_TURN_URL,
-      username: import.meta.env.VITE_TURN_USERNAME,
-      credential: import.meta.env.VITE_TURN_CREDENTIAL,
-    });
+  
+  const envUrl = import.meta.env.VITE_TURN_URL;
+  const username = import.meta.env.VITE_TURN_USERNAME;
+  const credential = import.meta.env.VITE_TURN_CREDENTIAL;
+
+  if (envUrl && username && credential) {
+    const match = envUrl.match(/turn:([^:]+)/);
+    const domain = match ? match[1] : envUrl.replace('turn:', '').split(':')[0];
+    
+    servers.push({ urls: `turn:${domain}:80`, username, credential });
+    servers.push({ urls: `turn:${domain}:443`, username, credential });
+    servers.push({ urls: `turn:${domain}:443?transport=tcp`, username, credential });
   }
   return { iceServers: servers };
 };
