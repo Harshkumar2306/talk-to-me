@@ -17,12 +17,14 @@ const getIceServers = () => {
   const credential = import.meta.env.VITE_TURN_CREDENTIAL;
 
   if (envUrl && username && credential) {
-    const match = envUrl.match(/turn:([^:]+)/);
-    const domain = match ? match[1] : envUrl.replace('turn:', '').split(':')[0];
+    const match = envUrl.match(/(?:turn|turns):([^:]+)/);
+    const domain = match ? match[1] : envUrl.replace(/turns?:/, '').split(':')[0];
     
+    servers.push({ urls: `stun:${domain}:80` });
     servers.push({ urls: `turn:${domain}:80`, username, credential });
+    servers.push({ urls: `turn:${domain}:80?transport=tcp`, username, credential });
     servers.push({ urls: `turn:${domain}:443`, username, credential });
-    servers.push({ urls: `turn:${domain}:443?transport=tcp`, username, credential });
+    servers.push({ urls: `turns:${domain}:443?transport=tcp`, username, credential });
   }
   return { iceServers: servers };
 };
