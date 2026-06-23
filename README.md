@@ -5,8 +5,7 @@ An ultra-premium, real-time messaging and group video calling application built 
 Built using **MongoDB, Express, React, Node.js, Socket.io, and simple-peer**.
 
 ### 🌟 Live Demo
-*(Replace these links with your actual deployed URLs)*
-- 🌐 **Frontend:** https://talk-to-me.vercel.app/
+- 🌐 **Frontend:** https://talk-to-me-pied.vercel.app/
 - ⚙️ **Backend API:** https://talk-to-me.onrender.com
 
 ---
