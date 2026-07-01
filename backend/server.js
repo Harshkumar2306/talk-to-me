@@ -119,7 +119,8 @@ io.on('connection', (socket) => {
 
   // WebRTC Signaling Events
   socket.on('call-user', (data) => {
-    socket.in(data.userToCall).emit('incoming-call', {
+    console.log(`[CALL] call-user: ${data.from} → ${data.userToCall} (type: ${data.type})`);
+    io.to(data.userToCall).emit('incoming-call', {
       signal: data.signalData,
       from: data.from,
       name: data.name,
@@ -128,12 +129,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('answer-call', (data) => {
-    socket.in(data.to).emit('call-accepted', data.signal);
+    console.log(`[CALL] answer-call: → ${data.to}`);
+    io.to(data.to).emit('call-accepted', data.signal);
   });
 
   socket.on('end-call', (data) => {
     if (data.to) {
-      socket.in(data.to).emit('call-ended');
+      console.log(`[CALL] end-call: → ${data.to}`);
+      io.to(data.to).emit('call-ended');
     }
   });
 

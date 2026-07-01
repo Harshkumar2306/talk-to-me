@@ -10,6 +10,13 @@ const getIceServers = () => {
   const servers = [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
+    // Free Open Relay TURN servers — needed for mobile/restrictive networks
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
   ];
   
   const envUrl = import.meta.env.VITE_TURN_URL;
@@ -65,10 +72,21 @@ export const CallProvider = ({ children }) => {
     }
   }, []);
 
+  const userRef = useRef(null);
+
   // Initialize socket once on mount
   useEffect(() => {
     const s = io(ENDPOINT);
     socketRef.current = s;
+
+    // CRITICAL: Re-join the user's room on EVERY connect/reconnect
+    // Without this, the socket loses its room after a reconnect and
+    // can never receive 'call-accepted' or 'incoming-call' signals.
+    s.on('connect', () => {
+      if (userRef.current) {
+        s.emit('setup', userRef.current);
+      }
+    });
 
     s.on('incoming-call', (data) => {
       setCallState({
@@ -94,6 +112,7 @@ export const CallProvider = ({ children }) => {
   // Register user with this socket when user logs in
   // Components can call registerUser(user) after login
   const registerUser = useCallback((user) => {
+    userRef.current = user;
     if (socketRef.current && user) {
       socketRef.current.emit('setup', user);
     }
