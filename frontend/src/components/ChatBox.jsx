@@ -714,10 +714,25 @@ const ChatBox = () => {
                     ...(selectedChat?.isGroupChat ? [{
                       label: 'Group Info',
                       icon: Users,
-                      action: () => { setShowGroupInfo(true); setDotMenuOpen(false); }
+                      action: (e) => { e.stopPropagation(); setShowGroupInfo(true); setDotMenuOpen(false); }
                     }] : []),
-                    { label: 'Clear Messages', icon: Trash2, action: () => { setMessages([]); setDotMenuOpen(false); } },
-                    { label: 'Close Chat', icon: X, action: () => { setSelectedChat(null); setDotMenuOpen(false); } },
+                    { label: 'Clear Messages', icon: Trash2, action: async (e) => { 
+                        e.stopPropagation(); 
+                        if(window.confirm('Are you sure you want to clear all messages? This will delete them for everyone.')) {
+                          try {
+                            await axios.delete(`/api/message/clear/${selectedChat._id}`, {
+                              headers: { Authorization: `Bearer ${user.token}` }
+                            });
+                            setMessages([]); 
+                            setChats((prev) => prev.map(c => c._id === selectedChat._id ? { ...c, latestMessage: null } : c));
+                            setDotMenuOpen(false); 
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }
+                      } 
+                    },
+                    { label: 'Close Chat', icon: X, action: (e) => { e.stopPropagation(); setSelectedChat(null); setDotMenuOpen(false); } },
                   ].map(({ label, icon: Icon, action }) => (
                     <button key={label} onClick={action} className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
                       <Icon size={15} className="opacity-60" /> {label}
