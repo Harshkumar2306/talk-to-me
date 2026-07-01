@@ -207,7 +207,7 @@ export const CallProvider = ({ children }) => {
     const stream = await getMedia(callType);
     if (!stream) { performCleanup(); return; }
 
-    setCallState((prev) => ({ ...prev, status: 'connected' }));
+    setCallState((prev) => ({ ...prev, status: 'connecting' }));
 
     const peerConfig = getIceServers();
 
