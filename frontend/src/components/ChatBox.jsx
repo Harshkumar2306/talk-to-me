@@ -61,10 +61,10 @@ const MessageBubble = ({ m, isMe, isDark, currentUserId }) => {
   };
 
   const bubbleBase = isMe
-    ? 'bg-brand-600 text-white rounded-tr-none'
+    ? 'bg-gradient-to-tr from-brand-600 to-indigo-500 text-white rounded-tr-none shadow-md shadow-brand-500/20'
     : isDark
-      ? 'bg-[#1e293b] text-white rounded-tl-none border border-white/5'
-      : 'bg-white text-gray-800 rounded-tl-none border border-black/10 shadow-sm';
+      ? 'bg-white/10 backdrop-blur-md text-white rounded-tl-none border border-white/5 shadow-sm'
+      : 'bg-white text-gray-800 rounded-tl-none border border-black/5 shadow-sm';
 
   const renderContent = () => {
     if (m.messageType === 'image') {
@@ -749,7 +749,9 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
       </div>
 
       {/* ── Messages ── */}
-      <div className="flex-1 overflow-y-auto p-5 z-10 flex flex-col gap-2" onClick={() => { setShowEmoji(false); setDotMenuOpen(false); }}>
+      <div className="flex-1 overflow-y-auto p-5 z-10 flex flex-col gap-2 relative" onClick={() => { setShowEmoji(false); setDotMenuOpen(false); }}>
+        {/* Subtle background pattern */}
+        <div className={`absolute inset-0 pointer-events-none ${isDark ? 'opacity-[0.03]' : 'opacity-[0.04]'}`} style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px' }} />
         {loading ? (
           <div className="flex-1 flex justify-center items-center">
             <Loader2 className="animate-spin text-brand-500" size={36} />
@@ -768,99 +770,103 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ── Input Area ── */}
-      <div className={`p-4 ${inputBg} border-t z-10`}>
-        <AnimatePresence>
-          {isRecording && (
-            <div className="mb-3">
-              <AudioRecorder
-                onSend={handleVoiceSend}
-                onCancel={() => setIsRecording(false)}
-                isDark={isDark}
-              />
-            </div>
-          )}
-        </AnimatePresence>
+      {/* ── Floating Input Area ── */}
+      <div className="p-3 z-10 bg-transparent mb-2">
+        <div className={`max-w-5xl mx-auto rounded-3xl p-2 flex items-end gap-2 relative shadow-2xl border ${isDark ? 'bg-[#1e293b]/90 border-white/10 backdrop-blur-xl' : 'bg-white/90 border-black/5 backdrop-blur-xl shadow-black/5'}`}>
+          <AnimatePresence>
+            {isRecording && (
+              <div className="mb-1 w-full">
+                <AudioRecorder
+                  onSend={handleVoiceSend}
+                  onCancel={() => setIsRecording(false)}
+                  isDark={isDark}
+                />
+              </div>
+            )}
+          </AnimatePresence>
 
-        {!isRecording && (
-          <div className="flex items-end gap-2 relative">
-            {/* Emoji Button */}
-            <div className="relative" ref={emojiRef}>
+          {!isRecording && (
+            <div className="flex items-end gap-2 relative w-full">
+              {/* Emoji Button */}
+              <div className="relative" ref={emojiRef}>
+                <button
+                  onClick={() => setShowEmoji(!showEmoji)}
+                  className={`p-2.5 rounded-xl transition-colors ${showEmoji ? 'text-brand-400 bg-brand-500/10' : isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-gray-900 hover:bg-black/5'}`}
+                >
+                  <Smile size={22} />
+                </button>
+                <AnimatePresence>
+                  {showEmoji && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute bottom-14 left-0 z-50"
+                    >
+                      <EmojiPicker
+                        onEmojiClick={handleEmojiClick}
+                        theme={isDark ? 'dark' : 'light'}
+                        searchDisabled={false}
+                        height={340}
+                        width={320}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* File Button */}
               <button
-                onClick={() => setShowEmoji(!showEmoji)}
-                className={`p-2.5 rounded-xl transition-colors ${showEmoji ? 'text-brand-400 bg-brand-500/10' : isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-gray-900 hover:bg-black/5'}`}
-              >
-                <Smile size={22} />
-              </button>
-              <AnimatePresence>
-                {showEmoji && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute bottom-12 left-0 z-50"
-                  >
-                    <EmojiPicker
-                      onEmojiClick={handleEmojiClick}
-                      theme={isDark ? 'dark' : 'light'}
-                      searchDisabled={false}
-                      height={340}
-                      width={320}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* File Button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingFile}
-              className={`p-2.5 rounded-xl transition-colors ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-gray-900 hover:bg-black/5'}`}
-            >
-              {uploadingFile ? <Loader2 size={22} className="animate-spin text-brand-400" /> : <Paperclip size={22} />}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept="image/*,application/pdf,.doc,.docx,.txt,.zip"
-              onChange={handleFileSelect}
-            />
-
-            {/* Text Input */}
-            <div className={`flex-1 ${inputAreaBg} border rounded-2xl px-4 py-2.5 flex items-center min-h-[48px] transition-all focus-within:border-brand-500/50`}>
-              <input
-                type="text"
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={typingHandler}
-                onKeyDown={sendMessage}
-                className={`w-full bg-transparent text-base ${isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'} focus:outline-none`}
-              />
-            </div>
-
-            {/* Voice / Send */}
-            {newMessage.trim() ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => sendMessage(e)}
-                className="p-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition-colors shadow-lg shadow-brand-500/30"
-              >
-                <Send size={20} />
-              </motion.button>
-            ) : (
-              <button
-                onClick={() => setIsRecording(true)}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFile}
                 className={`p-2.5 rounded-xl transition-colors ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-500 hover:text-gray-900 hover:bg-black/5'}`}
               >
-                <Mic size={22} />
+                {uploadingFile ? <Loader2 size={22} className="animate-spin text-brand-400" /> : <Paperclip size={22} />}
               </button>
-            )}
-          </div>
-        )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="image/*,application/pdf,.doc,.docx,.txt,.zip"
+                onChange={handleFileSelect}
+              />
+
+              {/* Text Input */}
+              <div className={`flex-1 ${inputAreaBg} border rounded-2xl px-4 py-2.5 flex items-center min-h-[48px] transition-all focus-within:border-brand-500/50`}>
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={typingHandler}
+                  onKeyDown={sendMessage}
+                  className={`w-full bg-transparent text-base ${isDark ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'} focus:outline-none`}
+                />
+              </div>
+
+              {/* Voice / Send */}
+              {newMessage.trim() ? (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => sendMessage(e)}
+                  className="p-3 bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white rounded-2xl transition-all shadow-lg shadow-brand-500/30"
+                >
+                  <Send size={22} className="ml-0.5" />
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsRecording(true)}
+                  className="p-3 bg-brand-500 hover:bg-brand-400 text-white rounded-2xl transition-all shadow-lg shadow-brand-500/30"
+                >
+                  <Mic size={22} />
+                </motion.button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Group Info Modal */}

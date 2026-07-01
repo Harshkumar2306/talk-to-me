@@ -3,7 +3,7 @@ import { ChatState } from '../Context/ChatProvider';
 import { useTheme } from '../Context/ThemeProvider';
 import axios from 'axios';
 import { Plus, Users, Mic, Image, FileText } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import CreateGroupModal from './Group/CreateGroupModal';
 import io from 'socket.io-client';
 import ImageViewerModal from './ImageViewerModal';
@@ -102,15 +102,18 @@ const MyChats = () => {
             const preview = getLatestPreview(chat);
             const unreadCount = getUnreadCount(chat);
             return (
-              <button
+              <motion.button
+                layout
+                whileHover={{ scale: 1.01, x: 2 }}
+                whileTap={{ scale: 0.98 }}
                 key={chat._id}
                 onClick={() => setSelectedChat(chat)}
-                className={`w-full cursor-pointer px-3 py-3 rounded-xl flex items-center gap-3 transition-all duration-150 text-left border ${
+                className={`w-full cursor-pointer px-3 py-3 rounded-2xl flex items-center gap-3 transition-colors duration-200 text-left border ${
                   isSelected
-                    ? 'bg-brand-600 border-brand-500 shadow-lg shadow-brand-500/20'
+                    ? 'bg-gradient-to-r from-brand-500 to-indigo-600 border-transparent shadow-lg shadow-brand-500/30'
                     : isDark
-                      ? 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/5'
-                      : 'bg-transparent border-transparent hover:bg-gray-50 hover:border-black/5'
+                      ? 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/10'
+                      : 'bg-transparent border-transparent hover:bg-white hover:border-gray-100 hover:shadow-sm'
                 }`}
               >
                 <div className="relative flex-shrink-0">
@@ -127,7 +130,13 @@ const MyChats = () => {
                     </div>
                   )}
                   {!chat.isGroupChat && (
-                    <div className={`absolute bottom-0 right-0 w-3 h-3 ${onlineUsers?.includes(chat.users.find(u => u._id !== loggedUser?._id)?._id) ? 'bg-green-400' : 'bg-red-500'} rounded-full border-2 ${isSelected ? 'border-brand-600' : isDark ? 'border-[#1e293b]' : 'border-white'}`} />
+                    <div className="absolute bottom-0 right-0">
+                      <div className={`w-3.5 h-3.5 ${onlineUsers?.includes(chat.users.find(u => u._id !== loggedUser?._id)?._id) ? 'bg-green-400' : 'bg-red-500'} rounded-full border-2 ${isSelected ? 'border-brand-600' : isDark ? 'border-[#1e293b]' : 'border-white'} shadow-sm relative`}>
+                        {onlineUsers?.includes(chat.users.find(u => u._id !== loggedUser?._id)?._id) && (
+                          <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -152,7 +161,7 @@ const MyChats = () => {
                     </span>
                   </div>
                 )}
-              </button>
+              </motion.button>
             );
           })
         )}
