@@ -17,7 +17,7 @@ const CallWindow = () => {
 
   const { status, callerName, callType } = callState;
 
-  const isOpen = status === 'calling' || status === 'connected' || status === 'connecting';
+  const isOpen = status === 'calling' || status === 'connected';
 
   // Attach local stream when video ref mounts
   useEffect(() => {
@@ -71,14 +71,10 @@ const CallWindow = () => {
                 </div>
               </div>
               <div className="text-center">
-                <p className="text-gray-400 text-sm tracking-widest uppercase mb-2">
-                  {status === 'connecting' ? 'Connecting' : 'Calling'}
-                </p>
+                <p className="text-gray-400 text-sm tracking-widest uppercase mb-2">Calling</p>
                 <div className="flex items-center gap-2">
                   <Loader2 size={16} className="text-brand-400 animate-spin" />
-                  <span className="text-white text-xl font-medium">
-                    {status === 'connecting' ? 'Establishing connection...' : 'Waiting for answer...'}
-                  </span>
+                  <span className="text-white text-xl font-medium">Waiting for answer...</span>
                 </div>
               </div>
             </motion.div>

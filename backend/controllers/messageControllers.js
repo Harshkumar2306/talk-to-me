@@ -71,16 +71,3 @@ export const markMessagesRead = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-//@description     Clear all messages in a chat
-//@route           DELETE /api/message/clear/:chatId
-//@access          Protected
-export const clearMessages = async (req, res) => {
-  try {
-    await Message.deleteMany({ chat: req.params.chatId });
-    await Chat.findByIdAndUpdate(req.params.chatId, { latestMessage: null });
-    res.status(200).json({ message: "Messages cleared" });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
