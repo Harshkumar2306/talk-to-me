@@ -592,7 +592,7 @@ const ChatBox = () => {
                   alt="Avatar"
                   className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border-2 border-brand-500/40"
                 />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-green-400 border-2 border-[#1e293b] rounded-full" />
+                <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 ${onlineUsers.includes(sender?._id) ? 'bg-green-400' : 'bg-red-500'} border-2 border-[#1e293b] rounded-full`} />
               </>
             )}
           </div>
