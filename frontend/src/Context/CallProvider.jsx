@@ -254,9 +254,6 @@ export const CallProvider = ({ children }) => {
     peer.on('connect', () => {
       console.log('[CallProvider] Peer connected (initiator)');
       setCallState((prev) => ({ ...prev, status: 'connected' }));
-      if (peer.streams && peer.streams[0]) {
-        attachRemote(peer.streams[0]);
-      }
     });
 
     peer.on('error', (err) => {
@@ -330,9 +327,6 @@ export const CallProvider = ({ children }) => {
     peer.on('connect', () => {
       console.log('[CallProvider] Peer connected (answerer)');
       setCallState((prev) => ({ ...prev, status: 'connected' }));
-      if (peer.streams && peer.streams[0]) {
-        attachRemote(peer.streams[0]);
-      }
     });
 
     peer.on('error', (err) => {
