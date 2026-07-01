@@ -43,7 +43,7 @@ const VideoTile = ({ stream, name, pic, isLocal, isVideoOff: videoMuted }) => {
         <div className="flex flex-col items-center gap-2 z-10">
           <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-brand-500/60 shadow-lg">
             <img
-              src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+              src={pic || 'https://www.gravatar.com/avatar/?d=mp'}
               alt={name}
               className="w-full h-full object-cover"
             />

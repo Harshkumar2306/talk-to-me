@@ -14,7 +14,7 @@ const seedGuestUser = async () => {
       name: 'Guest User',
       email: 'guest@example.com',
       password: '123456',
-      pic: 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+      pic: 'https://www.gravatar.com/avatar/?d=mp',
     });
 
     console.log('🌱 Guest user seeded successfully!');

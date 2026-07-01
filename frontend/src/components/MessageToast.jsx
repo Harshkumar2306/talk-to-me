@@ -49,7 +49,7 @@ const MessageToast = ({ toasts, onDismiss }) => {
               {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <img
-                  src={toast.senderPic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                  src={toast.senderPic || 'https://www.gravatar.com/avatar/?d=mp'}
                   alt=""
                   className="w-10 h-10 rounded-full object-cover border-2 border-brand-500/40"
                 />

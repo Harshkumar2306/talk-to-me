@@ -242,7 +242,7 @@ const Sidebar = () => {
         <div className="flex flex-col items-center gap-3">
           <button onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); setIsSettingsOpen(false); }} className="relative group">
             <div className="w-10 h-10 rounded-full border-2 border-brand-500 p-[2px] overflow-hidden">
-              <img src={user?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
+              <img src={user?.pic || 'https://www.gravatar.com/avatar/?d=mp'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
             </div>
             <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <User size={12} className="text-white" />
@@ -261,7 +261,7 @@ const Sidebar = () => {
         {/* Profile avatar */}
         <button onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); setIsSettingsOpen(false); }} className="relative p-2">
           <div className="w-8 h-8 rounded-full border-2 border-brand-500 overflow-hidden">
-            <img src={user?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
+            <img src={user?.pic || 'https://www.gravatar.com/avatar/?d=mp'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
           </div>
         </button>
 
@@ -395,7 +395,7 @@ const Sidebar = () => {
               <div className="px-6 pb-6">
                 <div className="relative -mt-12 mb-4 inline-block">
                   <div className="w-24 h-24 rounded-2xl border-4 border-[#1e293b] overflow-hidden shadow-xl">
-                    <img src={user?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
+                    <img src={user?.pic || 'https://www.gravatar.com/avatar/?d=mp'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
                   </div>
                   <button
                     onClick={() => picInputRef.current?.click()}

@@ -609,7 +609,7 @@ const ChatBox = () => {
             ) : (
               <>
                 <img
-                  src={sender?.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                  src={sender?.pic || 'https://www.gravatar.com/avatar/?d=mp'}
                   alt="Avatar"
                   className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border-2 border-brand-500/40"
                 />

@@ -9,7 +9,7 @@ const userSchema = mongoose.Schema(
     pic: {
       type: String,
       default:
-        'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
+        'https://www.gravatar.com/avatar/?d=mp',
     },
     isOnline: { type: Boolean, default: false },
     lastSeen: { type: Date, default: Date.now },

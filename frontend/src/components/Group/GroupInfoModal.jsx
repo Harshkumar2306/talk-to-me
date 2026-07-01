@@ -247,7 +247,7 @@ const GroupInfoModal = ({ onClose }) => {
                     >
                       <div className="relative">
                         <img
-                          src={member.pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                          src={member.pic || 'https://www.gravatar.com/avatar/?d=mp'}
                           alt=""
                           className="w-10 h-10 rounded-full object-cover"
                         />

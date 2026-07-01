@@ -107,7 +107,7 @@ const MyChats = () => {
                 <div className="relative flex-shrink-0">
                   {!chat.isGroupChat ? (
                     <img
-                      src={getSenderPic(loggedUser, chat.users) || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+                      src={getSenderPic(loggedUser, chat.users) || 'https://www.gravatar.com/avatar/?d=mp'}
                       alt=""
                       className="w-12 h-12 rounded-full object-cover"
                     />
