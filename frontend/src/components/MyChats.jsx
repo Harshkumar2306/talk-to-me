@@ -6,12 +6,14 @@ import { Plus, Users, Mic, Image, FileText } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import CreateGroupModal from './Group/CreateGroupModal';
 import io from 'socket.io-client';
+import ImageViewerModal from './ImageViewerModal';
 
 const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
 
 const MyChats = () => {
   const [loggedUser, setLoggedUser] = useState();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [viewingProfilePic, setViewingProfilePic] = useState(null);
   const [loadingChats, setLoadingChats] = useState(true);
   const { selectedChat, setSelectedChat, user, chats, setChats, notification, onlineUsers } = ChatState();
   const { isDark } = useTheme();
@@ -116,7 +118,8 @@ const MyChats = () => {
                     <img
                       src={getSenderPic(loggedUser, chat.users) || 'https://www.gravatar.com/avatar/?d=mp'}
                       alt=""
-                      className="w-12 h-12 rounded-full object-cover"
+                      onClick={(e) => { e.stopPropagation(); setViewingProfilePic(getSenderPic(loggedUser, chat.users) || 'https://www.gravatar.com/avatar/?d=mp'); }}
+                      className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -157,6 +160,7 @@ const MyChats = () => {
 
       <AnimatePresence>
         {showCreateGroup && <CreateGroupModal onClose={() => setShowCreateGroup(false)} />}
+        {viewingProfilePic && <ImageViewerModal imageUrl={viewingProfilePic} onClose={() => setViewingProfilePic(null)} />}
       </AnimatePresence>
     </div>
   );

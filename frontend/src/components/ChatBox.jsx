@@ -14,6 +14,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import GroupInfoModal from './Group/GroupInfoModal';
 import MessageToast from './MessageToast';
+import ImageViewerModal from './ImageViewerModal';
 
 const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
 const CLOUDINARY_CLOUD = 'drnp7fcux';
@@ -248,7 +249,8 @@ const AudioRecorder = ({ onSend, onCancel, isDark }) => {
 };
 
 // ─── Main ChatBox ───
-const ChatBox = () => {
+const ChatBox = ({ fetchAgain, setFetchAgain }) => {
+  const [viewingProfilePic, setViewingProfilePic] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState('');
@@ -612,7 +614,8 @@ const ChatBox = () => {
                 <img
                   src={sender?.pic || 'https://www.gravatar.com/avatar/?d=mp'}
                   alt="Avatar"
-                  className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border-2 border-brand-500/40"
+                  onClick={(e) => { e.stopPropagation(); setViewingProfilePic(sender?.pic || 'https://www.gravatar.com/avatar/?d=mp'); }}
+                  className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border-2 border-brand-500/40 cursor-pointer hover:opacity-80 transition-opacity"
                 />
                 <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 ${onlineUsers.includes(sender?._id) ? 'bg-green-400' : 'bg-red-500'} border-2 border-[#1e293b] rounded-full`} />
               </>
@@ -864,6 +867,9 @@ const ChatBox = () => {
       <AnimatePresence>
         {showGroupInfo && selectedChat?.isGroupChat && (
           <GroupInfoModal onClose={() => setShowGroupInfo(false)} />
+        )}
+        {viewingProfilePic && (
+          <ImageViewerModal imageUrl={viewingProfilePic} onClose={() => setViewingProfilePic(null)} />
         )}
       </AnimatePresence>
 
