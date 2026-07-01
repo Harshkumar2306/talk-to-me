@@ -171,6 +171,10 @@ export const CallProvider = ({ children }) => {
   }, []);
 
   const attachRemote = useCallback((stream) => {
+    if (localStreamRef.current && stream.id === localStreamRef.current.id) {
+      console.warn('[CallProvider] WARNING: Tried to attach local stream to remote video! Ignoring.');
+      return;
+    }
     remoteStreamRef.current = stream;
     if (userVideoNodeRef.current) {
       userVideoNodeRef.current.srcObject = stream;

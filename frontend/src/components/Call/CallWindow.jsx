@@ -115,7 +115,7 @@ const CallWindow = () => {
           >
             <span className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-green-400 animate-pulse' : 'bg-yellow-400 animate-pulse'}`} />
             <span className="text-white text-sm font-medium">
-              {status === 'connected' ? 'Connected (v2.1)' : 'Connecting (v2.1)'}
+              {status === 'connected' ? 'Connected (v2.2)' : 'Connecting (v2.2)'}
             </span>
           </motion.div>
         </div>
