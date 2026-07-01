@@ -10,9 +10,6 @@ const getIceServers = () => {
   const servers = [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
   ];
   
   const envUrl = import.meta.env.VITE_TURN_URL;
@@ -29,12 +26,12 @@ const getIceServers = () => {
     servers.push({ urls: `turn:${domain}:443`, username, credential });
     servers.push({ urls: `turns:${domain}:443?transport=tcp`, username, credential });
   }
-  return { iceServers: servers, iceCandidatePoolSize: 10 };
+  return { iceServers: servers };
 };
 
 export const CallProvider = ({ children }) => {
   const [callState, setCallState] = useState({
-    status: 'idle', // 'idle' | 'calling' | 'incoming' | 'connecting' | 'connected'
+    status: 'idle', // 'idle' | 'calling' | 'incoming' | 'connected'
     callType: 'video',
     callerName: '',
     callerId: '',
@@ -51,10 +48,6 @@ export const CallProvider = ({ children }) => {
   const remoteStreamRef = useRef(null);
   const myVideoNodeRef = useRef(null);
   const userVideoNodeRef = useRef(null);
-  const userRef = useRef(null);
-  // Store callerSignal in a ref so answerCall always has the latest value
-  const callerSignalRef = useRef(null);
-  const callerIdRef = useRef(null);
 
   // Callback ref for local (my) video element
   const myVideoRef = useCallback((node) => {
@@ -74,27 +67,10 @@ export const CallProvider = ({ children }) => {
 
   // Initialize socket once on mount
   useEffect(() => {
-    const s = io(ENDPOINT, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
-    });
+    const s = io(ENDPOINT);
     socketRef.current = s;
 
-    // CRITICAL: Re-join the user's room on EVERY connect/reconnect
-    s.on('connect', () => {
-      console.log('[CallProvider] Socket connected:', s.id);
-      if (userRef.current) {
-        s.emit('setup', userRef.current);
-      }
-    });
-
     s.on('incoming-call', (data) => {
-      console.log('[CallProvider] incoming-call from:', data.from, 'signal type:', data.signal?.type);
-      // Store in refs for answerCall to access (avoids stale closure issues)
-      callerSignalRef.current = data.signal;
-      callerIdRef.current = data.from;
       setCallState({
         status: 'incoming',
         callType: data.type || 'video',
@@ -105,29 +81,8 @@ export const CallProvider = ({ children }) => {
       });
     });
 
-    // CRITICAL FIX: Handle call-accepted as a PERSISTENT listener on the socket,
-    // not a one-off inside startCall. This ensures it's always active and never
-    // gets lost due to socket reconnects or timing issues.
-    s.on('call-accepted', (signal) => {
-      console.log('[CallProvider] call-accepted received, signal type:', signal?.type);
-      if (peerRef.current && !peerRef.current.destroyed) {
-        try {
-          peerRef.current.signal(signal);
-        } catch (err) {
-          console.error('[CallProvider] Error signaling peer with accepted signal:', err);
-        }
-      } else {
-        console.warn('[CallProvider] call-accepted received but no active peer');
-      }
-    });
-
     s.on('call-ended', () => {
-      console.log('[CallProvider] call-ended received');
       performCleanup();
-    });
-
-    s.on('disconnect', (reason) => {
-      console.log('[CallProvider] Socket disconnected:', reason);
     });
 
     return () => {
@@ -137,11 +92,10 @@ export const CallProvider = ({ children }) => {
   }, []);
 
   // Register user with this socket when user logs in
+  // Components can call registerUser(user) after login
   const registerUser = useCallback((user) => {
-    userRef.current = user;
     if (socketRef.current && user) {
       socketRef.current.emit('setup', user);
-      console.log('[CallProvider] registerUser:', user._id);
     }
   }, []);
 
@@ -171,10 +125,6 @@ export const CallProvider = ({ children }) => {
   }, []);
 
   const attachRemote = useCallback((stream) => {
-    if (localStreamRef.current && stream.id === localStreamRef.current.id) {
-      console.warn('[CallProvider] WARNING: Tried to attach local stream to remote video! Ignoring.');
-      return;
-    }
     remoteStreamRef.current = stream;
     if (userVideoNodeRef.current) {
       userVideoNodeRef.current.srcObject = stream;
@@ -198,9 +148,6 @@ export const CallProvider = ({ children }) => {
     if (myVideoNodeRef.current) myVideoNodeRef.current.srcObject = null;
     if (userVideoNodeRef.current) userVideoNodeRef.current.srcObject = null;
 
-    callerSignalRef.current = null;
-    callerIdRef.current = null;
-
     setCallState({
       status: 'idle',
       callType: 'video',
@@ -214,9 +161,6 @@ export const CallProvider = ({ children }) => {
   }, []);
 
   const startCall = useCallback(async (userToCall, callUser, type = 'video') => {
-    // Guard against double-clicking
-    if (peerRef.current) return;
-
     const stream = await getMedia(type);
     if (!stream) return;
 
@@ -228,12 +172,10 @@ export const CallProvider = ({ children }) => {
     }));
 
     const peerConfig = getIceServers();
-    console.log('[CallProvider] Creating initiator peer, trickle: false');
 
     const peer = new Peer({ initiator: true, trickle: false, stream, config: peerConfig });
 
     peer.on('signal', (signalData) => {
-      console.log('[CallProvider] Initiator signal ready, type:', signalData.type);
       socketRef.current.emit('call-user', {
         userToCall,
         signalData,
@@ -244,117 +186,50 @@ export const CallProvider = ({ children }) => {
     });
 
     peer.on('stream', (remoteStream) => {
-      console.log('[CallProvider] Received remote stream (initiator)');
       setCallState((prev) => ({ ...prev, status: 'connected' }));
       attachRemote(remoteStream);
     });
 
-    peer.on('track', (track, remoteStream) => {
-      console.log('[CallProvider] Received remote track (initiator)');
-      setCallState((prev) => ({ ...prev, status: 'connected' }));
-      attachRemote(remoteStream);
-    });
-
-    peer.on('connect', () => {
-      console.log('[CallProvider] Peer connected (initiator)');
-      setCallState((prev) => ({ ...prev, status: 'connected' }));
-    });
-
-    peer.on('error', (err) => {
-      console.error('[CallProvider] Peer error (initiator):', err.message);
-      socketRef.current.emit('end-call', { to: userToCall });
-      performCleanup();
-    });
-    peer.on('close', () => {
-      console.log('[CallProvider] Peer closed (initiator)');
-      // Only cleanup if we haven't already (error fires before close)
-      if (peerRef.current) {
-        socketRef.current.emit('end-call', { to: userToCall });
-        performCleanup();
-      }
-    });
+    peer.on('error', () => performCleanup());
+    peer.on('close', () => performCleanup());
 
     peerRef.current = peer;
 
-    // NOTE: call-accepted is now handled as a persistent listener on the socket
-    // (set up in the useEffect above), not as a one-off listener inside startCall.
+    socketRef.current.off('call-accepted');
+    socketRef.current.on('call-accepted', (signal) => {
+      peer.signal(signal);
+    });
   }, [getMedia, attachRemote, performCleanup]);
 
   const answerCall = useCallback(async () => {
-    // Read from REFS to avoid any stale closure issues
-    const callerSignal = callerSignalRef.current;
-    const callerId = callerIdRef.current;
-    const callType = callState.callType;
-
-    console.log('[CallProvider] answerCall called. callerSignal exists:', !!callerSignal, 'callerId:', callerId);
-
-    if (!callerSignal) {
-      console.error('[CallProvider] answerCall: No caller signal available!');
-      performCleanup();
-      return;
-    }
-
-    // Guard against double-clicking
-    if (peerRef.current) return;
+    const { callerSignal, callerId, callType } = callState;
 
     const stream = await getMedia(callType);
-    if (!stream) {
-      socketRef.current.emit('end-call', { to: callerId });
-      performCleanup();
-      return;
-    }
+    if (!stream) { performCleanup(); return; }
 
     setCallState((prev) => ({ ...prev, status: 'connecting' }));
 
     const peerConfig = getIceServers();
-    console.log('[CallProvider] Creating answerer peer, trickle: false');
 
     const peer = new Peer({ initiator: false, trickle: false, stream, config: peerConfig });
 
     peer.on('signal', (signalData) => {
-      console.log('[CallProvider] Answerer signal ready, type:', signalData.type, 'emitting answer-call to:', callerId);
       socketRef.current.emit('answer-call', { signal: signalData, to: callerId });
     });
 
     peer.on('stream', (remoteStream) => {
-      console.log('[CallProvider] Received remote stream (answerer)');
-      setCallState((prev) => ({ ...prev, status: 'connected' }));
       attachRemote(remoteStream);
     });
 
-    peer.on('track', (track, remoteStream) => {
-      console.log('[CallProvider] Received remote track (answerer)');
-      setCallState((prev) => ({ ...prev, status: 'connected' }));
-      attachRemote(remoteStream);
-    });
+    peer.on('error', () => performCleanup());
+    peer.on('close', () => performCleanup());
 
-    peer.on('connect', () => {
-      console.log('[CallProvider] Peer connected (answerer)');
-      setCallState((prev) => ({ ...prev, status: 'connected' }));
-    });
-
-    peer.on('error', (err) => {
-      console.error('[CallProvider] Peer error (answerer):', err.message);
-      socketRef.current.emit('end-call', { to: callerId });
-      performCleanup();
-    });
-    peer.on('close', () => {
-      console.log('[CallProvider] Peer closed (answerer)');
-      if (peerRef.current) {
-        socketRef.current.emit('end-call', { to: callerId });
-        performCleanup();
-      }
-    });
-
-    // Feed the caller's SDP offer into our peer
-    console.log('[CallProvider] Signaling peer with caller SDP');
     peer.signal(callerSignal);
     peerRef.current = peer;
-  }, [callState.callType, getMedia, attachRemote, performCleanup]);
+  }, [callState, getMedia, attachRemote, performCleanup]);
 
   const rejectCall = useCallback(() => {
-    const callerId = callerIdRef.current || callState.callerId;
-    socketRef.current.emit('end-call', { to: callerId });
+    socketRef.current.emit('end-call', { to: callState.callerId });
     performCleanup();
   }, [callState.callerId, performCleanup]);
 
@@ -394,8 +269,6 @@ export const CallProvider = ({ children }) => {
         isVideoOff,
         myVideoRef,
         userVideoRef,
-        localStreamRef,
-        remoteStreamRef,
         registerUser,
         startCall,
         answerCall,

@@ -10,8 +10,6 @@ const CallWindow = () => {
     isVideoOff,
     myVideoRef,
     userVideoRef,
-    localStreamRef,
-    remoteStreamRef,
     endCall,
     toggleMute,
     toggleVideo,
@@ -20,6 +18,11 @@ const CallWindow = () => {
   const { status, callerName, callType } = callState;
 
   const isOpen = status === 'calling' || status === 'connected' || status === 'connecting';
+
+  // Attach local stream when video ref mounts
+  useEffect(() => {
+    // Refs are already managed in CallProvider via localStreamRef
+  }, [status]);
 
   if (!isOpen) return null;
 
@@ -35,20 +38,16 @@ const CallWindow = () => {
         {/* Remote Video (Full screen) */}
         <div className="flex-1 relative bg-[#0a0f1e] flex items-center justify-center overflow-hidden">
           {status === 'connected' ? (
-            <motion.div
+            <motion.video
               key="remote-video"
               initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="w-full h-full"
-            >
-              <video
-                playsInline
-                autoPlay
-                ref={userVideoRef}
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
+              playsInline
+              autoPlay
+              ref={userVideoRef}
+              className="w-full h-full object-cover"
+            />
           ) : (
             /* Calling / waiting screen */
             <motion.div
@@ -92,17 +91,18 @@ const CallWindow = () => {
             transition={{ delay: 0.3, type: 'spring', damping: 20 }}
             className="absolute top-5 right-5 w-44 h-64 bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/15 z-20"
           >
-            <video
-              playsInline
-              muted
-              autoPlay
-              ref={myVideoRef}
-              className={`w-full h-full object-cover scale-x-[-1] ${(isVideoOff || callType === 'audio') ? 'hidden' : 'block'}`}
-            />
-            {(isVideoOff || callType === 'audio') && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+            {isVideoOff || callType === 'audio' ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-800">
                 <VideoOff size={32} className="text-gray-500" />
               </div>
+            ) : (
+              <video
+                playsInline
+                muted
+                autoPlay
+                ref={myVideoRef}
+                className="w-full h-full object-cover scale-x-[-1]"
+              />
             )}
           </motion.div>
 
@@ -115,7 +115,7 @@ const CallWindow = () => {
           >
             <span className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-green-400 animate-pulse' : 'bg-yellow-400 animate-pulse'}`} />
             <span className="text-white text-sm font-medium">
-              {status === 'connected' ? 'Connected (v2.2)' : 'Connecting (v2.2)'}
+              {status === 'connected' ? 'Connected' : 'Connecting...'}
             </span>
           </motion.div>
         </div>
