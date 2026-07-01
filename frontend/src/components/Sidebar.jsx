@@ -388,26 +388,30 @@ const Sidebar = () => {
               onClick={(e) => e.stopPropagation()}
               className={`relative w-full max-w-sm ${isDark ? 'bg-[#1e293b] text-white' : 'bg-white text-gray-800'} rounded-2xl shadow-2xl border ${isDark ? 'border-white/10' : 'border-black/10'} overflow-hidden`}
             >
-              <div className="h-24 bg-gradient-to-br from-brand-500 to-violet-600" />
-              <button onClick={() => setIsProfileOpen(false)} className="absolute top-3 right-3 p-1.5 bg-black/20 hover:bg-black/30 rounded-full text-white transition-colors">
+              <div className="h-32 bg-gradient-to-br from-brand-500 via-indigo-500 to-violet-600 relative overflow-hidden">
+                {/* Decorative background elements */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/40 to-transparent" />
+              </div>
+              <button onClick={() => setIsProfileOpen(false)} className="absolute top-3 right-3 p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full text-white transition-all hover:rotate-90">
                 <X size={16} />
               </button>
               <div className="px-6 pb-6">
-                <div className="relative -mt-12 mb-4 inline-block">
-                  <div className="w-24 h-24 rounded-2xl border-4 border-[#1e293b] overflow-hidden shadow-xl">
+                <div className="relative -mt-16 mb-6 inline-block group cursor-pointer" onClick={() => picInputRef.current?.click()}>
+                  <div className="w-28 h-28 rounded-2xl border-4 border-[#1e293b] overflow-hidden shadow-2xl transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-1">
                     <img src={user?.pic || 'https://www.gravatar.com/avatar/?d=mp'} alt={user?.name} className="w-full h-full rounded-full object-cover" />
                   </div>
                   <button
-                    onClick={() => picInputRef.current?.click()}
                     disabled={uploadingPic}
-                    className="absolute -bottom-1 -right-1 w-8 h-8 bg-brand-500 hover:bg-brand-400 rounded-xl flex items-center justify-center shadow-lg transition-colors"
+                    className="absolute -bottom-2 -right-2 w-10 h-10 bg-brand-500 hover:bg-brand-400 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-12"
                   >
-                    {uploadingPic ? <Loader2 size={14} className="animate-spin text-white" /> : <Camera size={14} className="text-white" />}
+                    {uploadingPic ? <Loader2 size={16} className="animate-spin text-white" /> : <Camera size={16} className="text-white" />}
                   </button>
                   <input ref={picInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePicUpload(e.target.files[0])} />
                 </div>
+
                 {editingName ? (
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-4 bg-black/20 p-2 rounded-xl border border-brand-500/50">
                     <input
                       ref={nameInputRef}
                       type="text"
@@ -415,32 +419,44 @@ const Sidebar = () => {
                       onChange={(e) => setNewName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleNameSave(); if (e.key === 'Escape') setEditingName(false); }}
                       autoFocus
-                      className={`flex-1 text-xl font-bold bg-transparent border-b-2 border-brand-500 focus:outline-none pb-0.5 ${isDark ? 'text-white' : 'text-gray-800'}`}
+                      className={`flex-1 text-lg font-bold bg-transparent focus:outline-none px-2 ${isDark ? 'text-white' : 'text-gray-800'}`}
                     />
                     <button
                       onClick={handleNameSave}
                       disabled={savingName}
-                      className="p-1.5 bg-brand-500 hover:bg-brand-400 rounded-lg text-white flex-shrink-0 transition-colors"
+                      className="p-2 bg-brand-500 hover:bg-brand-400 rounded-lg text-white flex-shrink-0 transition-all hover:scale-105"
                     >
-                      {savingName ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      {savingName ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 mb-1 group">
-                    <h2 className="text-xl font-bold">{user?.name}</h2>
-                    <button
-                      onClick={() => { setNewName(user?.name || ''); setEditingName(true); }}
-                      className={`p-1 rounded-lg transition-all ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-700 hover:bg-black/5'}`}
-                    >
-                      <Pencil size={14} />
+                  <div 
+                    onClick={() => { setNewName(user?.name || ''); setEditingName(true); }}
+                    className={`flex justify-between items-center mb-4 group cursor-pointer p-3 -mx-3 rounded-2xl transition-all ${isDark ? 'hover:bg-white/5 hover:shadow-lg' : 'hover:bg-gray-50 hover:shadow-lg'}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <h2 className={`text-2xl font-bold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{user?.name}</h2>
+                      <p className={`text-sm truncate mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{user?.email}</p>
+                    </div>
+                    <button className={`p-2.5 rounded-xl transition-all ${isDark ? 'bg-white/5 text-brand-400 group-hover:bg-brand-500 group-hover:text-white' : 'bg-brand-50 text-brand-600 group-hover:bg-brand-500 group-hover:text-white'}`}>
+                      <Pencil size={16} />
                     </button>
                   </div>
                 )}
-                <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{user?.email}</p>
-                <div className={`rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-gray-50'}`}>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-600'}>Active now</span>
+
+                <div className={`mt-2 rounded-2xl p-4 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-black/5'} flex items-center justify-between transition-all hover:scale-[1.02]`}>
+                  <div>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Current Status</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative">
+                        <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />
+                        <div className="absolute inset-0 w-2.5 h-2.5 bg-green-500 rounded-full animate-ping opacity-75" />
+                      </div>
+                      <span className={`text-sm font-semibold ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Active right now</span>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-full text-xs font-extrabold tracking-wide ${isDark ? 'bg-green-500/10 text-green-400' : 'bg-green-100 text-green-600'}`}>
+                    ONLINE
                   </div>
                 </div>
               </div>
