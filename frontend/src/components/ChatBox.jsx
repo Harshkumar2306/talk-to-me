@@ -590,7 +590,7 @@ const ChatBox = () => {
       />
 
       {/* ── Header ── */}
-      <div className={`px-3 md:px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-20 shadow-sm flex-shrink-0`}>
+      <div className={`relative px-3 md:px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-50 shadow-sm flex-shrink-0`}>
         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
           {/* Mobile back button */}
           <button
@@ -734,7 +734,7 @@ const ChatBox = () => {
                     },
                     { label: 'Close Chat', icon: X, action: (e) => { e.stopPropagation(); setSelectedChat(null); setDotMenuOpen(false); } },
                   ].map(({ label, icon: Icon, action }) => (
-                    <button key={label} onClick={action} className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
+                    <button key={label} onPointerDown={(e) => { e.preventDefault(); action(e); }} className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
                       <Icon size={15} className="opacity-60" /> {label}
                     </button>
                   ))}
