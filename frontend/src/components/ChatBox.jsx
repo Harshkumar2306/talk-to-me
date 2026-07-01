@@ -447,6 +447,22 @@ const ChatBox = () => {
   const sendMessageAPI = async ({ content = '', messageType = 'text', fileUrl = null, fileName = null }) => {
     if (!content && !fileUrl) return;
     socket.emit('stop typing', selectedChat._id);
+    
+    const tempId = `temp_${Date.now()}`;
+    const tempMsg = {
+      _id: tempId,
+      content: content || '',
+      chat: selectedChat,
+      sender: user,
+      messageType: messageType || 'text',
+      fileUrl: fileUrl || null,
+      fileName: fileName || null,
+      readBy: [],
+      createdAt: new Date().toISOString(),
+    };
+    
+    setMessages((prev) => [...prev, tempMsg]);
+    
     try {
       const { data } = await axios.post(
         '/api/message',
@@ -454,7 +470,9 @@ const ChatBox = () => {
         { headers: { 'Content-type': 'application/json', Authorization: `Bearer ${user.token}` } }
       );
       socket.emit('new message', data);
-      setMessages((prev) => [...prev, data]);
+      
+      setMessages((prev) => prev.map(m => m._id === tempId ? data : m));
+      
       setChats((prev) => {
         const idx = prev.findIndex((c) => c._id === selectedChat._id);
         if (idx > -1) {
@@ -466,7 +484,10 @@ const ChatBox = () => {
         }
         return prev;
       });
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e); 
+      setMessages((prev) => prev.filter(m => m._id !== tempId));
+    }
   };
 
   const sendMessage = async (e) => {
