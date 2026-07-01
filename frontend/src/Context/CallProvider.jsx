@@ -48,6 +48,7 @@ export const CallProvider = ({ children }) => {
   const remoteStreamRef = useRef(null);
   const myVideoNodeRef = useRef(null);
   const userVideoNodeRef = useRef(null);
+  const incomingSignalsRef = useRef([]);
 
   // Callback ref for local (my) video element
   const myVideoRef = useCallback((node) => {
@@ -71,14 +72,21 @@ export const CallProvider = ({ children }) => {
     socketRef.current = s;
 
     s.on('incoming-call', (data) => {
-      setCallState({
-        status: 'incoming',
-        callType: data.type || 'video',
-        callerName: data.name,
-        callerId: data.from,
-        callerSignal: data.signal,
-        callWithId: data.from,
-      });
+      if (peerRef.current && !peerRef.current.destroyed) {
+        peerRef.current.signal(data.signal);
+      } else {
+        incomingSignalsRef.current.push(data.signal);
+        setCallState((prev) => {
+          if (prev.status === 'incoming' && prev.callerId === data.from) return prev;
+          return {
+            status: 'incoming',
+            callType: data.type || 'video',
+            callerName: data.name,
+            callerId: data.from,
+            callWithId: data.from,
+          };
+        });
+      }
     });
 
     s.on('call-ended', () => {
@@ -139,6 +147,7 @@ export const CallProvider = ({ children }) => {
       localStreamRef.current = null;
     }
     remoteStreamRef.current = null;
+    incomingSignalsRef.current = [];
 
     if (peerRef.current) {
       peerRef.current.destroy();
@@ -173,7 +182,7 @@ export const CallProvider = ({ children }) => {
 
     const peerConfig = getIceServers();
 
-    const peer = new Peer({ initiator: true, trickle: false, stream, config: peerConfig });
+    const peer = new Peer({ initiator: true, trickle: true, stream, config: peerConfig });
 
     peer.on('signal', (signalData) => {
       socketRef.current.emit('call-user', {
@@ -223,7 +232,7 @@ export const CallProvider = ({ children }) => {
 
     const peerConfig = getIceServers();
 
-    const peer = new Peer({ initiator: false, trickle: false, stream, config: peerConfig });
+    const peer = new Peer({ initiator: false, trickle: true, stream, config: peerConfig });
 
     peer.on('signal', (signalData) => {
       socketRef.current.emit('answer-call', { signal: signalData, to: callerId });
@@ -249,7 +258,8 @@ export const CallProvider = ({ children }) => {
     peer.on('error', () => performCleanup());
     peer.on('close', () => performCleanup());
 
-    peer.signal(callerSignal);
+    incomingSignalsRef.current.forEach(sig => peer.signal(sig));
+    incomingSignalsRef.current = []; // Clear buffer after processing
     peerRef.current = peer;
   }, [callState, getMedia, attachRemote, performCleanup]);
 
