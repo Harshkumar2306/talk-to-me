@@ -430,7 +430,7 @@ const Sidebar = () => {
                     <h2 className="text-xl font-bold">{user?.name}</h2>
                     <button
                       onClick={() => { setNewName(user?.name || ''); setEditingName(true); }}
-                      className={`p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-700 hover:bg-black/5'}`}
+                      className={`p-1 rounded-lg transition-all ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-gray-700 hover:bg-black/5'}`}
                     >
                       <Pencil size={14} />
                     </button>
