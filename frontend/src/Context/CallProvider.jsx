@@ -202,8 +202,14 @@ export const CallProvider = ({ children }) => {
       }
     });
 
-    peer.on('error', () => performCleanup());
-    peer.on('close', () => performCleanup());
+    peer.on('error', () => {
+      socketRef.current.emit('end-call', { to: userToCall });
+      performCleanup();
+    });
+    peer.on('close', () => {
+      socketRef.current.emit('end-call', { to: userToCall });
+      performCleanup();
+    });
 
     peerRef.current = peer;
 
@@ -217,7 +223,11 @@ export const CallProvider = ({ children }) => {
     const { callerSignal, callerId, callType } = callState;
 
     const stream = await getMedia(callType);
-    if (!stream) { performCleanup(); return; }
+    if (!stream) {
+      socketRef.current.emit('end-call', { to: callerId });
+      performCleanup();
+      return;
+    }
 
     setCallState((prev) => ({ ...prev, status: 'connecting' }));
 
@@ -246,8 +256,14 @@ export const CallProvider = ({ children }) => {
       }
     });
 
-    peer.on('error', () => performCleanup());
-    peer.on('close', () => performCleanup());
+    peer.on('error', () => {
+      socketRef.current.emit('end-call', { to: callerId });
+      performCleanup();
+    });
+    peer.on('close', () => {
+      socketRef.current.emit('end-call', { to: callerId });
+      performCleanup();
+    });
 
     peer.signal(callerSignal);
     peerRef.current = peer;
