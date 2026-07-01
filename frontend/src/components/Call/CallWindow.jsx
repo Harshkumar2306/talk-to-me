@@ -21,16 +21,6 @@ const CallWindow = () => {
 
   const isOpen = status === 'calling' || status === 'connected' || status === 'connecting';
 
-  // Forcefully attach streams whenever refs or state change
-  useEffect(() => {
-    if (myVideoRef?.current && localStreamRef?.current) {
-      myVideoRef.current.srcObject = localStreamRef.current;
-    }
-    if (userVideoRef?.current && remoteStreamRef?.current) {
-      userVideoRef.current.srcObject = remoteStreamRef.current;
-    }
-  }, [status, isVideoOff, myVideoRef, userVideoRef, localStreamRef, remoteStreamRef]);
-
   if (!isOpen) return null;
 
   return (
