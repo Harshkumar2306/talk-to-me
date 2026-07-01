@@ -190,6 +190,18 @@ export const CallProvider = ({ children }) => {
       attachRemote(remoteStream);
     });
 
+    peer.on('track', (track, remoteStream) => {
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
+      attachRemote(remoteStream);
+    });
+
+    peer.on('connect', () => {
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
+      if (peer.streams && peer.streams[0]) {
+        attachRemote(peer.streams[0]);
+      }
+    });
+
     peer.on('error', () => performCleanup());
     peer.on('close', () => performCleanup());
 
@@ -218,7 +230,20 @@ export const CallProvider = ({ children }) => {
     });
 
     peer.on('stream', (remoteStream) => {
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
       attachRemote(remoteStream);
+    });
+
+    peer.on('track', (track, remoteStream) => {
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
+      attachRemote(remoteStream);
+    });
+
+    peer.on('connect', () => {
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
+      if (peer.streams && peer.streams[0]) {
+        attachRemote(peer.streams[0]);
+      }
     });
 
     peer.on('error', () => performCleanup());
