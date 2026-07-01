@@ -12,17 +12,21 @@ const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' 
 const MyChats = () => {
   const [loggedUser, setLoggedUser] = useState();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [loadingChats, setLoadingChats] = useState(true);
   const { selectedChat, setSelectedChat, user, chats, setChats, notification, onlineUsers } = ChatState();
   const { isDark } = useTheme();
 
   const fetchChats = async () => {
     try {
+      setLoadingChats(true);
       const { data } = await axios.get('/api/chat', {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       setChats(data);
+      setLoadingChats(false);
     } catch (error) {
       console.error(error);
+      setLoadingChats(false);
     }
   };
 
@@ -80,9 +84,12 @@ const MyChats = () => {
         </button>
       </div>
 
-      {/* Chat List */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
-        {chats.length === 0 ? (
+        {loadingChats ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+          </div>
+        ) : chats.length === 0 ? (
           <div className={`text-center py-12 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             <Users size={32} className="mx-auto mb-2 opacity-30" />
             <p className="text-sm">No chats yet. Search for someone!</p>

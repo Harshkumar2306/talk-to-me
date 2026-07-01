@@ -420,13 +420,14 @@ const ChatBox = () => {
     if (!selectedChat) return;
     try {
       setLoading(true);
+      setMessages([]); // Clear previous messages instantly
       const { data } = await axios.get(`/api/message/${selectedChat._id}`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       setMessages(data);
       setLoading(false);
       socket.emit('join chat', selectedChat._id);
-      // Mark all unread messages as read and notify senders
+      
       await markReadAPI(selectedChat._id);
     } catch { setLoading(false); }
   };
