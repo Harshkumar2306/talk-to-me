@@ -1,101 +1,141 @@
-# 🚀 TalkToMe: Real-Time Chat & Group Call Platform
+<div align="center">
+  <img src="frontend/public/logo1.png" alt="TalkToMe Logo" width="120" height="120" />
+  <h1>🚀 TalkToMe</h1>
+  <p><strong>Enterprise-Grade Real-Time Messaging & WebRTC Group Calling Platform</strong></p>
 
-An ultra-premium, real-time messaging and group video calling application built with the MERN stack and WebRTC. Designed with a WhatsApp-style interface, it features seamless multi-network NAT traversal for flawless calls on any connection.
+  <p>
+    <a href="https://talk-to-me-pied.vercel.app/" target="_blank">View Live Demo</a> ·
+    <a href="https://github.com/Harshkumar2306/talk-to-me/issues" target="_blank">Report Bug</a> ·
+    <a href="https://github.com/Harshkumar2306/talk-to-me/issues" target="_blank">Request Feature</a>
+  </p>
 
-Built using **MongoDB, Express, React, Node.js, Socket.io, and simple-peer**.
+  <p>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="NodeJS" />
+    <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="ExpressJS" />
+    <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+    <img src="https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="Socket.io" />
+    <img src="https://img.shields.io/badge/WebRTC-333333?style=for-the-badge&logo=webrtc&logoColor=white" alt="WebRTC" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
+  </p>
+</div>
 
-### 🌟 Live Demo
-- 🌐 **Frontend:** https://talk-to-me-pied.vercel.app/
-- ⚙️ **Backend API:** https://talk-to-me-1-jhl1.onrender.com
+---
+
+## 📖 Overview
+
+**TalkToMe** is an ultra-premium, highly scalable real-time messaging application engineered with the MERN stack and WebRTC. Designed to mirror the seamless UX of modern messaging apps like WhatsApp and Discord, it features state-of-the-art multi-network NAT traversal for flawless Peer-to-Peer (P2P) group video and audio calls on any connection.
+
+Whether you're on a restrictive corporate firewall or a mobile cellular network, TalkToMe's robust signaling and fallback TURN architecture ensures you stay connected.
+
+### 🌐 Live Deployment
+- **Frontend (Vercel):** [https://talk-to-me-pied.vercel.app/](https://talk-to-me-pied.vercel.app/)
+- **Backend API (Render):** [https://talk-to-me-1-jhl1.onrender.com](https://talk-to-me-1-jhl1.onrender.com)
+
+---
+
+## ✨ Core Features
+
+### 📞 WebRTC Mesh Group Calling
+- **Multi-Participant Video/Audio:** Fully functional mesh topology supporting multiple concurrent users in a single room.
+- **Adaptive Grid Layout:** UI automatically scales and recalculates participant video feeds dynamically.
+- **Hardware Controls:** Instant local media stream toggling (mute audio/disable video) with real-time UI synchronization.
+
+### 🛡️ Advanced NAT Traversal (Metered TURN)
+- **Seamless Connectivity:** Bypasses symmetric NATs and aggressive firewalls (e.g., strict cellular networks, corporate Wi-Fi).
+- **ICE Candidate Routing:** Automatically generates and tests multiple routing paths, including Port 443 TCP/TLS fallbacks, to guarantee connection reliability.
+
+### ⚡ Real-Time Messaging & Presence Engine
+- **Live Status Tracking:** Precisely tracks user presence, handling multi-tab session states to prevent false "Offline" broadcasts. Detects backgrounding/locking instantly.
+- **Optimistic UI Updates:** Zero-latency message dispatching. Messages appear instantly in the UI before the server even acknowledges them.
+- **Read Receipts Engine:** Granular tracking for Sent (1 tick), Delivered (2 gray ticks), and Read (2 blue ticks) states.
+- **Typing Indicators:** Real-time animated typing bubbles broadcasted via WebSockets.
+
+### 📂 Rich Media Sharing
+- **Cloudinary Integration:** High-speed uploads for images, documents, and other file types.
+- **Voice Notes:** Built-in browser audio recording for quick voice messaging.
+
+### 🎨 Ultra-Premium UI/UX
+- **Modern Aesthetics:** Beautiful dark mode implementation featuring sleek glassmorphism, glowing orbs, and bespoke typography.
+- **Fluid Animations:** Powered by Framer Motion for buttery-smooth modal interactions, message bubbles, and layout transitions.
+- **Fully Responsive:** Tailored experiences for both desktop power-users and mobile devices.
 
 ---
 
 ## 🏗️ System Architecture
 
+TalkToMe operates on a decoupled architecture, leveraging WebSockets for real-time signaling and WebRTC for decentralized media streaming.
+
 ```mermaid
 graph TB
-    subgraph Frontend["Frontend (Vercel)"]
-        UI["React Web App"]
-        UI --> |"REST API"| API
-        UI <--> |"WebSocket"| SOCKET
-        UI <--> |"WebRTC (P2P)"| PEER["Other User's Browser"]
+    subgraph Frontend["Frontend (React / Vite)"]
+        UI["User Interface"]
+        RTC["WebRTC Engine"]
+        UI <--> |"State / Render"| RTC
     end
 
-    subgraph Backend["Backend (Render)"]
-        API["Express Server"]
-        SOCKET["Socket.io Signaling"]
+    subgraph Backend["Backend (Node.js / Express)"]
+        API["REST API"]
+        SOCKET["Socket.io Server"]
+        AUTH["JWT Authentication"]
         
-        API --> |"Fetch/Store Data"| DB
-        SOCKET --> |"Presence / Signals"| UI
+        API <--> AUTH
+        SOCKET <--> AUTH
     end
 
-    subgraph Cloud["Cloud Services"]
+    subgraph Cloud["Cloud Infrastructure"]
         DB[("MongoDB Atlas")]
-        CDN["Cloudinary (Images/Audio)"]
-        TURN["Metered TURN Server"]
-        
-        UI --> |"Upload Media"| CDN
-        UI -.-> |"TCP/UDP Relay"| TURN
-        TURN -.-> |"NAT Traversal Fallback"| PEER
+        CDN["Cloudinary (Assets)"]
+        TURN["Metered TURN/STUN"]
     end
+    
+    %% Connections
+    UI --> |"HTTPS (CRUD)"| API
+    UI <--> |"WSS (Signaling/Presence)"| SOCKET
+    API --> |"Mongoose ODM"| DB
+    UI --> |"Media Upload"| CDN
+    RTC -.-> |"ICE Candidate Relay"| TURN
+    RTC <====> |"P2P Media Stream"| RTC_OTHER["Peer Browser"]
+    TURN -.-> |"Fallback Relay"| RTC_OTHER
 
-    style Frontend fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    style Backend fill:#d1fae5,stroke:#10b981,color:#064e3b
-    style Cloud fill:#fef3c7,stroke:#f59e0b,color:#78350f
+    style Frontend fill:#1e1e1e,stroke:#3b82f6,color:#fff
+    style Backend fill:#1e1e1e,stroke:#10b981,color:#fff
+    style Cloud fill:#1e1e1e,stroke:#f59e0b,color:#fff
 ```
 
 ---
 
-## 🌟 Features & Architecture
+## 🚀 Getting Started (Local Development)
 
-### 1. WhatsApp-Style Group Video & Audio Calls
-- Fully functional WebRTC mesh topology for multi-user group calls.
-- Adaptive grid layout (section per person) that scales beautifully based on the number of participants.
-- Local stream previews, mute audio, and disable video controls.
-
-### 2. Multi-Network NAT Traversal (Metered TURN Integration)
-- Connect seamlessly across strict cellular networks (like Jio, Airtel) and corporate WiFis.
-- Automatically generates and tests multiple ICE candidate fallback routes, including **Port 443 TCP/TLS**, to bypass symmetric NATs and aggressive firewalls.
-
-### 3. Real-Time Online Presence & Status Tracking
-- **Live Visibility Tracking:** Instantly tracks when a user backgrounds the app or locks their phone, immediately updating their status to "Offline".
-- **Multi-Tab Support:** Accurately calculates active sessions across multiple tabs to prevent false "Offline" broadcasts.
-- Green dot indicators and "Online" text rendered in real-time without page refreshes.
-
-### 4. Advanced Real-Time Messaging Engine
-- **Typing Indicators:** Real-time animated typing bubbles.
-- **Read Receipts:** WhatsApp-style ticks for Sent (1 tick), Delivered (2 gray ticks), and Read (2 blue ticks).
-- **File & Media Sharing:** Image, document, and audio sharing powered by Cloudinary.
-- **Voice Notes:** Built-in audio recorder for quick voice messages.
-
-### 5. Ultra-Premium React UX/UI
-- Built with React, Vite, Tailwind CSS, and Framer Motion.
-- Beautiful dark mode optimization with sleek glassmorphism effects and modern typography.
-- Fluid micro-animations for incoming call modals, message bubbles, and UI transitions.
-
----
-
-## 🛠️ Local Setup & Testing
+Follow these instructions to set up the project locally for development and testing.
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB Atlas account (free tier)
-- Cloudinary account (for media uploads)
-- Metered.ca account (for WebRTC TURN servers)
+- Node.js (v18.0.0 or higher)
+- npm or yarn
+- MongoDB Atlas Account (or local MongoDB instance)
+- Cloudinary Account
+- Metered.ca Account (for WebRTC TURN servers)
 
-### 1. Set Up Environment Variables
-Create a `.env` file in the **backend** folder:
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Harshkumar2306/talk-to-me.git
+cd talk-to-me
+```
+
+### 2. Configure Environment Variables
+
+**Backend (`backend/.env`):**
 ```env
 PORT=5001
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_super_secret_jwt_key
 NODE_ENV=development
 CLOUDINARY_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Create a `.env` file in the **frontend** folder:
+**Frontend (`frontend/.env`):**
 ```env
 VITE_BACKEND_URL=http://127.0.0.1:5001
 VITE_TURN_URL=turn:global.relay.metered.ca:80
@@ -103,69 +143,86 @@ VITE_TURN_USERNAME=your_metered_username
 VITE_TURN_CREDENTIAL=your_metered_password
 ```
 
-### 2. Run Backend
+### 3. Install Dependencies & Run
+
+We recommend running the frontend and backend in separate terminal windows.
+
+**Terminal 1 (Backend):**
 ```bash
 cd backend
 npm install
 npm run dev
 ```
-*The API will be available at http://localhost:5001.*
+*The backend API will initialize on `http://localhost:5001`.*
 
-### 3. Run Frontend
+**Terminal 2 (Frontend):**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*The dashboard will be available at http://localhost:5173.*
+*The frontend dashboard will be available at `http://localhost:5173`.*
 
 ---
 
-## ☁️ Cloud Deployment (Render + Vercel)
+## ☁️ Cloud Deployment Guidelines
 
-### 1. Backend Deployment (Render)
-1. Push this repository to GitHub.
-2. Go to **Render** → New Web Service → Connect your repo.
-3. Set the Root Directory to `backend`.
-4. Add all Backend Environment Variables (MONGO_URI, JWT_SECRET, etc.).
-5. Click **Deploy**. Copy the live backend URL.
+TalkToMe is optimized for modern PaaS providers.
 
-### 2. Frontend Deployment (Vercel)
-1. Go to **Vercel** → Add New Project → Select your repo.
-2. Set the Root Directory to `frontend`.
-3. Add your Environment Variables:
-   - `VITE_BACKEND_URL` = `https://your-backend.onrender.com`
-   - `VITE_TURN_URL`, `VITE_TURN_USERNAME`, `VITE_TURN_CREDENTIAL`
-4. Click **Deploy**!
+### Backend (Render / Heroku)
+1. Push the repository to your GitHub.
+2. Create a new **Web Service** on Render and connect the repository.
+3. Set the **Root Directory** to `backend`.
+4. Define the Build Command: `npm install`
+5. Define the Start Command: `npm start`
+6. Input all backend `.env` variables in the Render dashboard.
+7. Deploy!
+
+### Frontend (Vercel / Netlify)
+1. Import the repository into Vercel.
+2. Set the **Root Directory** to `frontend`.
+3. Vercel will automatically detect Vite. Leave build commands as default (`npm run build`).
+4. Input all frontend `.env` variables, ensuring `VITE_BACKEND_URL` points to your newly deployed Render URL.
+5. Deploy!
 
 ---
 
-## 📁 Project Structure
+## 📂 Repository Structure
 
 ```text
 talk-to-me/
 ├── backend/
-│   ├── models/            # Mongoose schemas (User, Chat, Message)
-│   ├── controllers/       # API route logic
-│   ├── routes/            # Express router definitions
-│   ├── middleware/        # JWT Auth and Error handling
-│   └── server.js          # Socket.io setup, WebRTC signaling & Presence Engine
+│   ├── config/            # DB connection & Seeders
+│   ├── controllers/       # Business logic for APIs
+│   ├── middleware/        # JWT Verification & Error catching
+│   ├── models/            # Mongoose Schemas (User, Chat, Message)
+│   ├── routes/            # Express endpoint definitions
+│   └── server.js          # Entry point, Socket.io, & Presence Engine
+│
 ├── frontend/
+│   ├── public/            # Static assets (Favicons, Logos)
 │   ├── src/
-│   │   ├── components/    # Reusable UI (ChatBox, Sidebar, Modals)
-│   │   ├── Context/       # Zustand/React Context (ChatProvider, CallProvider)
-│   │   ├── pages/         # HomePage, ChatPage
-│   │   ├── App.jsx        # Routing
-│   │   └── index.css      # Tailwind directives & custom animations
-│   ├── tailwind.config.js
-│   └── vite.config.js
+│   │   ├── components/    # Modular React UI (ChatBox, Sidebar, Modals)
+│   │   ├── Context/       # Global State (ChatProvider, CallProvider)
+│   │   ├── pages/         # High-level route views (HomePage, ChatPage)
+│   │   ├── App.jsx        # React Router configuration
+│   │   └── index.css      # Tailwind core & custom keyframe animations
+│   ├── tailwind.config.js # Theme tokens and plugins
+│   └── vite.config.js     # Bundler configuration
+│
 └── README.md
 ```
 
 ---
 
 ## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+Contributions, issues, and feature requests are highly encouraged! 
+Feel free to check the [issues page](https://github.com/Harshkumar2306/talk-to-me/issues) if you want to contribute.
 
 ## 📝 License
-This project is licensed under the MIT License.
+This project is licensed under the **MIT License**. See the `LICENSE` file for more details.
+
+---
+<div align="center">
+  <sub>Built with ❤️ for real-time communication.</sub>
+</div>
