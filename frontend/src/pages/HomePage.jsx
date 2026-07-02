@@ -32,8 +32,8 @@ const HomePage = () => {
           transition={{ duration: 0.8 }}
           className="mb-8 text-center"
         >
-          <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-brand-500/20 to-purple-500/20 rounded-3xl mb-4 backdrop-blur-sm border border-white/10 shadow-xl">
-            <MessageSquare size={48} className="text-brand-400" />
+          <div className="inline-flex items-center justify-center mb-4 shadow-2xl rounded-3xl overflow-hidden border border-white/10">
+            <img src="/logo.png" alt="TalkToMe Logo" className="w-20 h-20 object-cover" />
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
             TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
