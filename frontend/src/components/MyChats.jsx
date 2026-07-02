@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ChatState } from '../Context/ChatProvider';
 import { useTheme } from '../Context/ThemeProvider';
 import axios from 'axios';
-import { Plus, Users, Mic, Image, FileText } from 'lucide-react';
+import { Plus, Users, Mic, Image, FileText, MessageSquare } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import CreateGroupModal from './Group/CreateGroupModal';
 import io from 'socket.io-client';
@@ -75,7 +75,14 @@ const MyChats = () => {
     <div className={`flex flex-col h-full ${isDark ? 'bg-[#1e293b]' : 'bg-white'}`}>
       {/* Header */}
       <div className={`p-4 border-b ${isDark ? 'border-white/10 bg-black/20' : 'border-black/10 bg-gray-50'} flex justify-between items-center`}>
-        <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Chats</h2>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center p-1.5 bg-gradient-to-br from-brand-500/20 to-purple-500/20 rounded-lg">
+            <MessageSquare size={18} className="text-brand-500" />
+          </div>
+          <h2 className="text-xl font-extrabold tracking-tight">
+            TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
+          </h2>
+        </div>
         <button
           onClick={() => setShowCreateGroup(true)}
           className="p-2 bg-brand-600 hover:bg-brand-500 rounded-lg text-white transition-colors flex items-center gap-1 text-xs font-medium"
