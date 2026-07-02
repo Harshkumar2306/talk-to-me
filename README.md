@@ -1,6 +1,6 @@
 <div align="center">
   <img src="frontend/public/logo1.png" alt="TalkToMe Logo" width="120" height="120" />
-  <h1>🚀 TalkToMe</h1>
+  <h1>TalkToMe</h1>
   <p><strong>Enterprise-Grade Real-Time Messaging & WebRTC Group Calling Platform</strong></p>
 
   <p>
