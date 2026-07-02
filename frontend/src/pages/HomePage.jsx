@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Login from '../components/Authentication/Login';
 import Signup from '../components/Authentication/Signup';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
 
 
 const HomePage = () => {
@@ -22,7 +23,25 @@ const HomePage = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/30 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/20 blur-[120px]" />
 
-      <div className="container mx-auto flex flex-col items-center justify-center p-6 z-10">
+      <div className="container mx-auto flex flex-col items-center justify-center p-6 z-10 h-full overflow-y-auto">
+
+        {/* App Branding */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8 text-center"
+        >
+          <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-brand-500/20 to-purple-500/20 rounded-3xl mb-4 backdrop-blur-sm border border-white/10 shadow-xl">
+            <MessageSquare size={48} className="text-brand-400" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
+            TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
+          </h1>
+          <p className="text-gray-400 max-w-sm mx-auto">
+            Connect, chat, and call with anyone, anywhere in real-time.
+          </p>
+        </motion.div>
 
         {/* Auth Box */}
         <motion.div 
