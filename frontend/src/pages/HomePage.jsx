@@ -38,9 +38,6 @@ const HomePage = () => {
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
             TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
           </h1>
-          <p className="text-gray-400 max-w-sm mx-auto">
-            Connect, chat, and call with anyone, anywhere in real-time.
-          </p>
         </motion.div>
 
         {/* Auth Box */}
