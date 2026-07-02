@@ -76,8 +76,8 @@ const MyChats = () => {
       {/* Header */}
       <div className={`p-4 border-b ${isDark ? 'border-white/10 bg-black/20' : 'border-black/10 bg-gray-50'} flex justify-between items-center`}>
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center">
-            <img src="/logo.png" alt="Logo" className="w-7 h-7 object-cover rounded-md shadow-sm border border-white/10" />
+          <div className="flex items-center justify-center overflow-hidden rounded-lg shadow-sm">
+            <img src="/logo.png" alt="Logo" className="w-7 h-7 object-cover" />
           </div>
           <h2 className="text-xl font-extrabold tracking-tight">
             TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>

@@ -32,8 +32,8 @@ const HomePage = () => {
           transition={{ duration: 0.8 }}
           className="mb-8 text-center"
         >
-          <div className="inline-flex items-center justify-center mb-4">
-            <img src="/logo.png" alt="TalkToMe Logo" className="w-20 h-20 object-cover rounded-2xl shadow-2xl border border-white/10" />
+          <div className="inline-flex items-center justify-center mb-4 shadow-2xl rounded-3xl overflow-hidden border border-white/10">
+            <img src="/logo.png" alt="TalkToMe Logo" className="w-20 h-20 object-cover" />
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
             TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
