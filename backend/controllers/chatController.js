@@ -162,7 +162,10 @@ export const deleteChat = async (req, res) => {
     const chat = await Chat.findById(req.params.id);
     if (!chat) return res.status(404).send({ message: "Chat Not Found" });
 
-    if (!chat.users.includes(req.user._id) && chat.groupAdmin?.toString() !== req.user._id.toString()) {
+    const isUserInChat = chat.users.some(u => u.toString() === req.user._id.toString());
+    const isAdmin = chat.groupAdmin && chat.groupAdmin.toString() === req.user._id.toString();
+
+    if (!isUserInChat && !isAdmin) {
       return res.status(403).send({ message: "Unauthorized" });
     }
 
