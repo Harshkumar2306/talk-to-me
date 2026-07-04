@@ -65,10 +65,19 @@ export const CallProvider = ({ children }) => {
     }
   }, []);
 
+  const userRef = useRef(null);
+
   // Initialize socket once on mount
   useEffect(() => {
-    const s = io(ENDPOINT);
+    const s = io(ENDPOINT, { reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1000 });
     socketRef.current = s;
+
+    // Auto-register on every connect/reconnect so the server always has this socket in the user's room
+    s.on('connect', () => {
+      if (userRef.current) {
+        s.emit('setup', userRef.current);
+      }
+    });
 
     s.on('incoming-call', (data) => {
       setCallState({
@@ -92,9 +101,9 @@ export const CallProvider = ({ children }) => {
   }, []);
 
   // Register user with this socket when user logs in
-  // Components can call registerUser(user) after login
   const registerUser = useCallback((user) => {
-    if (socketRef.current && user) {
+    userRef.current = user;
+    if (socketRef.current?.connected && user) {
       socketRef.current.emit('setup', user);
     }
   }, []);

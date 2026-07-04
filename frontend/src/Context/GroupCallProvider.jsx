@@ -146,9 +146,13 @@ export const GroupCallProvider = ({ children }) => {
     if (!user) return;
     myIdRef.current = user._id;
 
-    const s = io(ENDPOINT);
+    const s = io(ENDPOINT, { reconnection: true, reconnectionAttempts: Infinity, reconnectionDelay: 1000 });
     socketRef.current = s;
-    s.emit('setup', user);
+
+    // Auto-register on every connect/reconnect so the server always has this socket in the user's room
+    s.on('connect', () => {
+      s.emit('setup', user);
+    });
 
     // ── Someone started a call in a group I belong to ──
     s.on('gc-incoming', ({ chatId, chatName, callerInfo, type }) => {
