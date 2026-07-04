@@ -17,10 +17,17 @@ const getIceServers = () => {
   const credential = import.meta.env.VITE_TURN_CREDENTIAL;
 
   if (envUrl && username && credential) {
-    servers.push({ urls: envUrl, username, credential });
-    // If the provided url doesn't explicitly specify transport=tcp, also add a TCP fallback
-    if (!envUrl.includes('transport=tcp')) {
-      servers.push({ urls: `${envUrl}?transport=tcp`, username, credential });
+    // Ensure the URL is properly prefixed with turn: or turns: for the WebRTC API
+    let formattedUrl = envUrl.trim();
+    if (!formattedUrl.startsWith('turn:') && !formattedUrl.startsWith('turns:') && !formattedUrl.startsWith('stun:')) {
+      formattedUrl = `turn:${formattedUrl}`;
+    }
+
+    servers.push({ urls: formattedUrl, username, credential });
+    
+    // If no transport is specified, add a TCP fallback for strict firewalls
+    if (!formattedUrl.includes('transport=')) {
+      servers.push({ urls: `${formattedUrl}?transport=tcp`, username, credential });
     }
   }
   return { iceServers: servers };

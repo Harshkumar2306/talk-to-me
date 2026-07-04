@@ -30,9 +30,15 @@ const getIceServers = () => {
   const credential = import.meta.env.VITE_TURN_CREDENTIAL;
 
   if (envUrl && username && credential) {
-    servers.push({ urls: envUrl, username, credential });
-    if (!envUrl.includes('transport=tcp')) {
-      servers.push({ urls: `${envUrl}?transport=tcp`, username, credential });
+    let formattedUrl = envUrl.trim();
+    if (!formattedUrl.startsWith('turn:') && !formattedUrl.startsWith('turns:') && !formattedUrl.startsWith('stun:')) {
+      formattedUrl = `turn:${formattedUrl}`;
+    }
+
+    servers.push({ urls: formattedUrl, username, credential });
+    
+    if (!formattedUrl.includes('transport=')) {
+      servers.push({ urls: `${formattedUrl}?transport=tcp`, username, credential });
     }
   }
   return { iceServers: servers };
