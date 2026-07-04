@@ -605,7 +605,7 @@ const ChatBox = () => {
       />
 
       {/* ── Header ── */}
-      <div className={`px-3 md:px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-10 shadow-sm flex-shrink-0`}>
+      <div className={`px-3 md:px-5 py-3 border-b ${headerBg} backdrop-blur-md flex justify-between items-center z-50 shadow-sm flex-shrink-0`}>
         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
           {/* Mobile back button */}
           <button
