@@ -17,14 +17,11 @@ const getIceServers = () => {
   const credential = import.meta.env.VITE_TURN_CREDENTIAL;
 
   if (envUrl && username && credential) {
-    const match = envUrl.match(/(?:turn|turns):([^:]+)/);
-    const domain = match ? match[1] : envUrl.replace(/turns?:/, '').split(':')[0];
-    
-    servers.push({ urls: `stun:${domain}:80` });
-    servers.push({ urls: `turn:${domain}:80`, username, credential });
-    servers.push({ urls: `turn:${domain}:80?transport=tcp`, username, credential });
-    servers.push({ urls: `turn:${domain}:443`, username, credential });
-    servers.push({ urls: `turns:${domain}:443?transport=tcp`, username, credential });
+    servers.push({ urls: envUrl, username, credential });
+    // If the provided url doesn't explicitly specify transport=tcp, also add a TCP fallback
+    if (!envUrl.includes('transport=tcp')) {
+      servers.push({ urls: `${envUrl}?transport=tcp`, username, credential });
+    }
   }
   return { iceServers: servers };
 };
@@ -216,8 +213,6 @@ export const CallProvider = ({ children }) => {
     const stream = await getMedia(callType);
     if (!stream) { performCleanup(); return; }
 
-    setCallState((prev) => ({ ...prev, status: 'connected' }));
-
     const peerConfig = getIceServers();
 
     const peer = new Peer({ initiator: false, trickle: false, stream, config: peerConfig });
@@ -227,6 +222,7 @@ export const CallProvider = ({ children }) => {
     });
 
     peer.on('stream', (remoteStream) => {
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
       attachRemote(remoteStream);
     });
 
