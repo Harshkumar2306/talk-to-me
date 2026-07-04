@@ -8,7 +8,7 @@ import EmojiPicker from 'emoji-picker-react';
 import {
   Smile, Paperclip, Mic, Send, Phone, Video, MoreVertical,
   Loader2, MessageSquare, X, Download, FileText, Image,
-  StopCircle, Trash2, Copy, Reply, Check, CheckCheck, Users, ChevronLeft
+  StopCircle, Trash2, Copy, Reply, Check, CheckCheck, Users, ChevronLeft, UserMinus
 } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -300,6 +300,21 @@ const ChatBox = () => {
     } catch (error) {
       console.error(error);
       alert("Failed to clear messages");
+    }
+  };
+
+  const deleteContactChat = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete this contact/chat?")) return;
+    try {
+      await axios.delete(`/api/chat/${selectedChat._id}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setSelectedChat(null);
+      setDotMenuOpen(false);
+      setChats((prev) => prev.filter((c) => c._id !== selectedChat._id));
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete chat");
     }
   };
 
@@ -730,7 +745,11 @@ const ChatBox = () => {
                       label: 'Group Info',
                       icon: Users,
                       action: () => { setShowGroupInfo(true); setDotMenuOpen(false); }
-                    }] : []),
+                    }] : [{
+                      label: 'Delete Contact',
+                      icon: UserMinus,
+                      action: () => { deleteContactChat(); }
+                    }]),
                     { label: 'Clear Messages', icon: Trash2, action: () => { clearChatMessages(); } },
                     { label: 'Close Chat', icon: X, action: () => { setSelectedChat(null); setDotMenuOpen(false); } },
                   ].map(({ label, icon: Icon, action }) => (

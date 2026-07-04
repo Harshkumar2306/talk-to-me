@@ -1,5 +1,6 @@
 import Chat from '../models/chatModel.js';
 import User from '../models/userModel.js';
+import Message from '../models/messageModel.js';
 
 //@description     Create or fetch One to One Chat
 //@route           POST /api/chat/
@@ -148,6 +149,27 @@ export const removeFromGroup = async (req, res) => {
 
     if (!removed) return res.status(404).json({ message: 'Chat Not Found' });
     res.json(removed);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+//@description     Delete a Chat
+//@route           DELETE /api/chat/:id
+//@access          Protected
+export const deleteChat = async (req, res) => {
+  try {
+    const chat = await Chat.findById(req.params.id);
+    if (!chat) return res.status(404).send({ message: "Chat Not Found" });
+
+    if (!chat.users.includes(req.user._id) && chat.groupAdmin?.toString() !== req.user._id.toString()) {
+      return res.status(403).send({ message: "Unauthorized" });
+    }
+
+    await Chat.findByIdAndDelete(req.params.id);
+    await Message.deleteMany({ chat: req.params.id });
+
+    res.status(200).send({ message: "Chat deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
