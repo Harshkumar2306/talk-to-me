@@ -13,6 +13,17 @@ export default defineConfig({
       globals: { Buffer: true, global: true, process: true },
     }),
   ],
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['simple-peer'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': {
