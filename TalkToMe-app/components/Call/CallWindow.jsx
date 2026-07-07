@@ -17,7 +17,7 @@ const CallWindow = () => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (callState.status === 'calling' || callState.status === 'connected') {
+    if (callState.status === 'calling' || callState.status === 'connecting' || callState.status === 'connected') {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
@@ -62,7 +62,8 @@ const CallWindow = () => {
             </View>
             <Text style={styles.callerName}>{callState.callerName || 'Unknown User'}</Text>
             <Text style={styles.statusText}>
-              {callState.status === 'calling' ? 'Calling...' : '00:00'}
+              {callState.status === 'calling' ? 'Calling...' : 
+               callState.status === 'connecting' ? 'Connecting...' : '00:00'}
             </Text>
           </LinearGradient>
         )}

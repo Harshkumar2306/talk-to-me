@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, FlatList, 
-  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Image, SafeAreaView
+  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Image, SafeAreaView, Animated
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -215,6 +215,21 @@ export default function ChatScreen() {
   const VoiceNotePlayer = ({ uri, isMe }) => {
     const player = useAudioPlayer({ uri });
     const status = useAudioPlayerStatus(player);
+    const pulseAnim = useRef(new Animated.Value(0.5)).current;
+
+    useEffect(() => {
+      if (status.playing) {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(pulseAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+            Animated.timing(pulseAnim, { toValue: 0.5, duration: 400, useNativeDriver: true }),
+          ])
+        ).start();
+      } else {
+        pulseAnim.stopAnimation();
+        pulseAnim.setValue(0.5);
+      }
+    }, [status.playing]);
 
     const handlePlayPause = () => {
       if (status.playing) {
@@ -248,9 +263,14 @@ export default function ChatScreen() {
           <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText, { fontWeight: 'bold' }]}>
             Voice Note
           </Text>
-          <Text style={[styles.audioProgressText, { color: isMe ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.5)' }]}>
-            {formatProgress(status.currentTime)} / {formatProgress(status.duration)}
-          </Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            {status.playing && (
+              <Animated.View style={[styles.playingDot, { transform: [{ scale: pulseAnim }], backgroundColor: isMe ? '#fff' : '#a78bfa' }]} />
+            )}
+            <Text style={[styles.audioProgressText, { color: isMe ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.5)' }]}>
+              {formatProgress(status.currentTime)} / {formatProgress(status.duration)}
+            </Text>
+          </View>
         </View>
       </View>
     );
@@ -550,6 +570,13 @@ const styles = StyleSheet.create({
   },
   audioProgressText: {
     fontSize: 11,
+    marginTop: 2,
+  },
+  playingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
     marginTop: 2,
   },
   messageText: {

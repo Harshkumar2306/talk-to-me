@@ -51,7 +51,7 @@ const waitForIceGathering = (peer) => {
 export const CallProvider = ({ children }) => {
   const { user } = ChatState();
   const [callState, setCallState] = useState({
-    status: 'idle', // 'idle' | 'calling' | 'incoming' | 'connected'
+    status: 'idle', // 'idle' | 'calling' | 'incoming' | 'connected' | 'connecting'
     callType: 'video',
     callerName: '',
     callerId: '',
@@ -148,15 +148,18 @@ export const CallProvider = ({ children }) => {
   }, [localStream]);
 
   const startCall = useCallback(async (userToCall, callUser, type = 'video') => {
-    const stream = await getMedia(type);
-    if (!stream) return;
-
     setCallState((prev) => ({
       ...prev,
       status: 'calling',
       callType: type,
       callWithId: userToCall,
     }));
+
+    const stream = await getMedia(type);
+    if (!stream) {
+        performCleanup();
+        return;
+    }
 
     const peer = new RTCPeerConnection(getIceServers());
     peerRef.current = peer;
@@ -196,6 +199,8 @@ export const CallProvider = ({ children }) => {
 
   const answerCall = useCallback(async () => {
     const { callerSignal, callerId, callType } = callState;
+    setCallState((prev) => ({ ...prev, status: 'connecting' }));
+
     const stream = await getMedia(callType);
     if (!stream) { performCleanup(); return; }
 
