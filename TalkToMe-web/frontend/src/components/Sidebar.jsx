@@ -289,7 +289,7 @@ const Sidebar = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className={`absolute bottom-14 right-0 w-72 ${dropdownClass} border rounded-2xl shadow-2xl p-3 z-50`}
+                className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-[92vw] max-w-[340px] ${dropdownClass} border rounded-2xl shadow-2xl p-3 z-50`}
               >
                 <div className="flex items-center justify-between mb-3 px-1">
                   <h3 className="font-semibold text-sm">Notifications</h3>
@@ -333,7 +333,7 @@ const Sidebar = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className={`absolute bottom-14 right-0 w-64 ${dropdownClass} border rounded-2xl shadow-2xl overflow-hidden z-50`}
+                className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-[92vw] max-w-[340px] ${dropdownClass} border rounded-2xl shadow-2xl overflow-hidden z-50`}
               >
                 <div className="p-4 border-b border-current/10">
                   <h3 className="font-semibold">Settings</h3>
