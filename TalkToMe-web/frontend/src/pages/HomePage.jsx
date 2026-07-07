@@ -70,7 +70,7 @@ const HomePage = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/30 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/20 blur-[120px]" />
 
-      <div className="container mx-auto flex flex-col lg:flex-row items-center justify-center p-6 z-10 h-full overflow-y-auto gap-12 lg:gap-24">
+      <div className="container mx-auto flex flex-col lg:flex-row items-center justify-start lg:justify-center p-6 pt-12 lg:pt-6 z-10 h-full overflow-y-auto gap-12 lg:gap-24">
         
         {/* Left Side: Branding & Info */}
         <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left max-w-xl gap-6">
