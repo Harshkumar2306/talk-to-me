@@ -26,6 +26,7 @@ const HomePage = () => {
         
         {/* Left Side: Branding & Info */}
         <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left max-w-xl">
+          <div className="bg-[#1e293b]/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
