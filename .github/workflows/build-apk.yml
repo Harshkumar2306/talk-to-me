@@ -33,6 +33,10 @@ jobs:
         working-directory: ./TalkToMe-app
         run: npm install --legacy-peer-deps
 
+      - name: Inject Environment Variables
+        working-directory: ./TalkToMe-app
+        run: echo "EXPO_PUBLIC_BACKEND_URL=https://talk-to-me-1-jhl1.onrender.com" > .env
+
       - name: Generate Native Android Code (Expo Prebuild)
         working-directory: ./TalkToMe-app
         run: npx expo prebuild --platform android
