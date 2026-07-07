@@ -32,12 +32,14 @@ const HomePage = () => {
             transition={{ duration: 0.8 }}
             className="mb-6"
           >
-            <div className="inline-flex items-center justify-center mb-6 shadow-2xl rounded-3xl overflow-hidden border border-white/10">
-              <img src="/logo1.png" alt="TalkToMe Logo" className="w-24 h-24 object-cover" />
+            <div className="flex flex-row items-center justify-center lg:justify-start gap-6 mb-6">
+              <div className="inline-flex items-center justify-center shadow-2xl rounded-3xl overflow-hidden border border-white/10">
+                <img src="/logo1.png" alt="TalkToMe Logo" className="w-16 h-16 md:w-20 md:h-20 object-cover" />
+              </div>
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+                TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
+              </h1>
             </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-              TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
-            </h1>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8">
               Experience seamless, secure, and lightning-fast communication. Connect with your friends, share moments, and stay in touch wherever you go.
             </p>
