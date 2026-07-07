@@ -34,9 +34,9 @@ const HomePage = () => {
           >
             <div className="flex flex-row items-center justify-center lg:justify-start gap-4 mb-6">
               <div className="inline-flex items-center justify-center shadow-2xl rounded-2xl overflow-hidden border border-white/10">
-                <img src="/logo1.png" alt="TalkToMe Logo" className="w-12 h-12 md:w-[60px] md:h-[60px] object-cover" />
+                <img src="/logo1.png" alt="TalkToMe Logo" className="w-10 h-10 md:w-12 md:h-12 object-cover" />
               </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
                 TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
               </h1>
             </div>
