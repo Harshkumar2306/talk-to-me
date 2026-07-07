@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Login from '../components/Authentication/Login';
 import Signup from '../components/Authentication/Signup';
@@ -9,6 +9,14 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState('login');
   const [showAuthOnMobile, setShowAuthOnMobile] = useState(false);
+  const authBoxRef = useRef(null);
+
+  const handleContinueToWeb = () => {
+    setShowAuthOnMobile(true);
+    setTimeout(() => {
+      authBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('userInfo'));
@@ -97,7 +105,7 @@ const HomePage = () => {
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                onClick={() => setShowAuthOnMobile(true)}
+                onClick={handleContinueToWeb}
                 className="lg:hidden w-full mt-2 px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold transition-all shadow-lg shadow-brand-500/30"
               >
                 Continue to Web
@@ -107,7 +115,7 @@ const HomePage = () => {
           </div>
 
           {/* Mobile Auth Box */}
-          <div className={`lg:hidden w-full flex justify-center ${showAuthOnMobile ? 'block' : 'hidden'}`}>
+          <div ref={authBoxRef} className={`lg:hidden w-full flex justify-center ${showAuthOnMobile ? 'block' : 'hidden'}`}>
             {AuthBox}
           </div>
 
