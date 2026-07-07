@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import io from 'socket.io-client';
+
+const ENDPOINT = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 const ChatContext = createContext();
 
@@ -32,6 +35,32 @@ const ChatProvider = ({ children }) => {
 
     fetchUser();
   }, [router]);
+
+  useEffect(() => {
+    if (!user) return;
+    const socket = io(ENDPOINT);
+    
+    socket.emit('setup', user);
+
+    socket.on('online-users', (users) => {
+      setOnlineUsers(users);
+    });
+
+    socket.on('user-online', (userId) => {
+      setOnlineUsers((prev) => {
+        if (!prev.includes(userId)) return [...prev, userId];
+        return prev;
+      });
+    });
+
+    socket.on('user-offline', (userId) => {
+      setOnlineUsers((prev) => prev.filter((id) => id !== userId));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user]);
 
   return (
     <ChatContext.Provider

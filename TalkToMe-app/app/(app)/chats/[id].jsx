@@ -41,7 +41,7 @@ export default function ChatScreen() {
   const recordingTimer = useRef(null);
 
   const flatListRef = useRef(null);
-  const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification, onlineUsers } = ChatState();
   const { startCall } = CallState();
   const router = useRouter();
 
@@ -203,6 +203,7 @@ export default function ChatScreen() {
   const chatAvatar = selectedChat?.isGroupChat 
     ? 'https://www.gravatar.com/avatar/?d=mp' 
     : (chatUser?.pic || 'https://www.gravatar.com/avatar/?d=mp');
+  const isOnline = chatUser && onlineUsers?.includes(chatUser._id);
 
   const initiateCall = (type) => {
     if (selectedChat.isGroupChat) {
@@ -322,13 +323,15 @@ export default function ChatScreen() {
           <View style={styles.headerTitleContainer}>
             <View style={styles.avatarContainer}>
               <Image source={{ uri: chatAvatar }} style={styles.headerAvatar} />
-              {/* Online indicator red dot */}
-              <View style={styles.onlineDot} />
+              {/* Online indicator dot */}
+              {!selectedChat?.isGroupChat && (
+                <View style={[styles.onlineDot, { backgroundColor: isOnline ? '#10b981' : '#ef4444' }]} />
+              )}
             </View>
             <View style={styles.headerTextGroup}>
               <Text style={styles.headerTitle} numberOfLines={1}>{chatName}</Text>
               <Text style={styles.headerSubtitle}>
-                {selectedChat?.isGroupChat ? `${selectedChat.users.length} members` : 'Offline'}
+                {selectedChat?.isGroupChat ? `${selectedChat.users.length} members` : (isOnline ? 'Online' : 'Offline')}
               </Text>
             </View>
           </View>

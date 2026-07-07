@@ -16,7 +16,7 @@ const SearchUsersModal = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
 
-  const { user, setSelectedChat, chats, setChats } = ChatState();
+  const { user, setSelectedChat, chats, setChats, onlineUsers } = ChatState();
   const router = useRouter();
 
   const handleSearch = async () => {
@@ -96,7 +96,10 @@ const SearchUsersModal = ({ visible, onClose }) => {
             contentContainerStyle={styles.listContainer}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.userCard} onPress={() => accessChat(item._id)}>
-                <Image source={{ uri: item.pic || 'https://www.gravatar.com/avatar/?d=mp' }} style={styles.avatar} />
+                <View style={{ position: 'relative' }}>
+                  <Image source={{ uri: item.pic || 'https://www.gravatar.com/avatar/?d=mp' }} style={styles.avatar} />
+                  <View style={[styles.onlineDot, { backgroundColor: onlineUsers?.includes(item._id) ? '#10b981' : '#ef4444' }]} />
+                </View>
                 <View style={styles.userInfo}>
                   <Text style={styles.userName}>{item.name}</Text>
                   <Text style={styles.userEmail}>{item.email}</Text>
@@ -205,6 +208,16 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: -2,
+    right: 10,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#1f2937',
   },
   userInfo: {
     flex: 1,

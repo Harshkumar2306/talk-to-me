@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { 
   Modal, View, Text, TextInput, TouchableOpacity, 
-  StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions
+  StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions, Switch, Alert
 } from 'react-native';
-import { X, Camera, Save, LogOut, Edit2 } from 'lucide-react-native';
+import { X, Camera, Save, LogOut, Edit2, Moon } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { ChatState } from '../context/ChatProvider';
@@ -18,6 +18,7 @@ const SettingsModal = ({ visible, onClose }) => {
   const [name, setName] = useState(user?.name || '');
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -149,6 +150,25 @@ const SettingsModal = ({ visible, onClose }) => {
               <View style={styles.statusBox}>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusText}>Active now</Text>
+              </View>
+
+              <View style={styles.settingRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Moon color="#fff" size={18} style={{ marginRight: 12 }} />
+                  <Text style={styles.settingText}>Dark Mode</Text>
+                </View>
+                <Switch 
+                  value={isDarkMode}
+                  onValueChange={(val) => {
+                    if (!val) {
+                      Alert.alert("Coming Soon", "Light mode is currently under development!");
+                    } else {
+                      setIsDarkMode(val);
+                    }
+                  }}
+                  trackColor={{ false: '#374151', true: '#7c3aed' }}
+                  thumbColor="#fff"
+                />
               </View>
 
               <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
@@ -300,6 +320,21 @@ const styles = StyleSheet.create({
   statusText: {
     color: 'rgba(255,255,255,0.9)',
     fontSize: 15,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  settingText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '500',
   },
   logoutBtn: {
     flexDirection: 'row',

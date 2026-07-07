@@ -18,7 +18,7 @@ const MyChats = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const { user, chats, setChats, setSelectedChat, notification } = ChatState();
+  const { user, chats, setChats, setSelectedChat, notification, onlineUsers } = ChatState();
   const router = useRouter();
 
   const fetchChats = async () => {
@@ -63,6 +63,10 @@ const MyChats = () => {
   };
 
   const renderItem = ({ item: chat }) => {
+    const isGroup = chat.isGroupChat;
+    const chatUser = !isGroup ? (chat.users[0]?._id === user?._id ? chat.users[1] : chat.users[0]) : null;
+    const isOnline = chatUser && onlineUsers?.includes(chatUser._id);
+
     return (
       <TouchableOpacity 
         style={styles.chatItem} 
@@ -74,7 +78,9 @@ const MyChats = () => {
             source={{ uri: !chat.isGroupChat ? (getSenderPic(user, chat.users) || 'https://www.gravatar.com/avatar/?d=mp') : 'https://www.gravatar.com/avatar/?d=mp' }}
             style={styles.avatar}
           />
-          <View style={styles.groupBadge} />
+          {!isGroup && (
+            <View style={[styles.groupBadge, { backgroundColor: isOnline ? '#10b981' : '#ef4444' }]} />
+          )}
         </View>
         <View style={styles.chatInfo}>
           <Text style={styles.chatName} numberOfLines={1}>
