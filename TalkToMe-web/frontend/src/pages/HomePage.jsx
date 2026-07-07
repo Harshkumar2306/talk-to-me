@@ -14,7 +14,7 @@ const HomePage = () => {
   const handleContinueToWeb = () => {
     setShowAuthOnMobile(true);
     setTimeout(() => {
-      authBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      authBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   };
 
