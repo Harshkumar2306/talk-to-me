@@ -38,6 +38,16 @@
           "cameraPermission": "Allow TalkToMe to access your camera for video calls.",
           "microphonePermission": "Allow TalkToMe to access your microphone for voice and video calls."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24
+          }
+        }
       ]
     ],
     "experiments": {
