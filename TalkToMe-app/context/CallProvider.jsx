@@ -168,14 +168,15 @@ export const CallProvider = ({ children }) => {
       peer.addTrack(track, stream);
     });
 
-    const remote = new MediaStream();
-    setRemoteStream(remote);
-
     peer.ontrack = (event) => {
-      if (event.track) {
-        remote.addTrack(event.track);
-        setCallState((prev) => ({ ...prev, status: 'connected' }));
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+      } else {
+        const inboundStream = new MediaStream();
+        inboundStream.addTrack(event.track);
+        setRemoteStream(inboundStream);
       }
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
     };
 
     try {
@@ -211,14 +212,15 @@ export const CallProvider = ({ children }) => {
       peer.addTrack(track, stream);
     });
 
-    const remote = new MediaStream();
-    setRemoteStream(remote);
-
     peer.ontrack = (event) => {
-      if (event.track) {
-        remote.addTrack(event.track);
-        setCallState((prev) => ({ ...prev, status: 'connected' }));
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+      } else {
+        const inboundStream = new MediaStream();
+        inboundStream.addTrack(event.track);
+        setRemoteStream(inboundStream);
       }
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
     };
 
     try {
