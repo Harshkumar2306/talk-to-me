@@ -45,7 +45,14 @@ jobs:
         working-directory: ./TalkToMe-app/android
         run: |
           sed -i 's/-XX:MaxMetaspaceSize=512m/-XX:MaxMetaspaceSize=1024m/g' gradle.properties
-          ./gradlew assembleRelease -x lintVitalRelease
+          ./gradlew assembleRelease -x lintVitalRelease --stacktrace > gradle-build.log 2>&1
+
+      - name: Upload Gradle Build Log (If Failed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-log
+          path: ./TalkToMe-app/android/gradle-build.log
 
       - name: Rename APK
         working-directory: ./TalkToMe-app/android/app/build/outputs/apk/release
