@@ -8,6 +8,7 @@ import { Smartphone, Download, ShieldCheck, Zap, Users } from 'lucide-react';
 const HomePage = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState('login');
+  const [showAuthOnMobile, setShowAuthOnMobile] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('userInfo'));
@@ -15,6 +16,53 @@ const HomePage = () => {
       navigate('/chats');
     }
   }, [navigate]);
+
+  const AuthBox = (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8, delay: 0.1 }}
+      className="w-full"
+    >
+      <div className="bg-[#1e293b]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl w-full">
+        <div className="flex rounded-full bg-black/40 p-1 mb-8 relative">
+          <motion.div
+            className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-brand-600 rounded-full shadow-md"
+            animate={{ x: tab === 'login' ? 0 : '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          />
+          <button
+            onClick={() => setTab('login')}
+            className={`w-1/2 py-3 rounded-full text-sm font-semibold z-10 transition-colors ${
+              tab === 'login' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Log In
+          </button>
+          <button
+            onClick={() => setTab('signup')}
+            className={`w-1/2 py-3 rounded-full text-sm font-semibold z-10 transition-colors ${
+              tab === 'signup' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, x: tab === 'login' ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: tab === 'login' ? 20 : -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {tab === 'login' ? <Login /> : <Signup />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
 
   return (
     <div className="flex flex-1 h-full w-full bg-[#0f172a] text-white overflow-hidden relative">
@@ -44,10 +92,26 @@ const HomePage = () => {
             <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-8">
               Experience seamless, secure, and lightning-fast communication. Connect with your friends, share moments, and stay in touch wherever you go.
             </p>
+            
+            {!showAuthOnMobile && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => setShowAuthOnMobile(true)}
+                className="lg:hidden w-full mt-2 px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold transition-all shadow-lg shadow-brand-500/30"
+              >
+                Continue to Web
+              </motion.button>
+            )}
           </motion.div>
           </div>
 
-          <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
+          {/* Mobile Auth Box */}
+          <div className={`lg:hidden w-full flex justify-center ${showAuthOnMobile ? 'block' : 'hidden'}`}>
+            {AuthBox}
+          </div>
+
+          <div className={`bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start ${showAuthOnMobile ? 'hidden lg:flex' : 'flex'}`}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -96,52 +160,9 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Right Side: Auth Box */}
-        <div className="flex-1 w-full max-w-md flex justify-center mt-12 lg:mt-0">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="w-full"
-          >
-            <div className="bg-[#1e293b]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl w-full">
-              <div className="flex rounded-full bg-black/40 p-1 mb-8 relative">
-                <motion.div
-                  className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-brand-600 rounded-full shadow-md"
-                  animate={{ x: tab === 'login' ? 0 : '100%' }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-                <button
-                  onClick={() => setTab('login')}
-                  className={`w-1/2 py-3 rounded-full text-sm font-semibold z-10 transition-colors ${
-                    tab === 'login' ? 'text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => setTab('signup')}
-                  className={`w-1/2 py-3 rounded-full text-sm font-semibold z-10 transition-colors ${
-                    tab === 'signup' ? 'text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  Sign Up
-                </button>
-              </div>
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={tab}
-                  initial={{ opacity: 0, x: tab === 'login' ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: tab === 'login' ? 20 : -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {tab === 'login' ? <Login /> : <Signup />}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </motion.div>
+        {/* Right Side: Auth Box (Desktop Only) */}
+        <div className="hidden lg:flex flex-1 w-full max-w-md justify-center">
+          {AuthBox}
         </div>
 
       </div>
