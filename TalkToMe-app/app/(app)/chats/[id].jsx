@@ -1,12 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, FlatList, 
-  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator 
+  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Image, SafeAreaView
 } from 'react-native';
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ChevronLeft, Info, Video, Phone, Image as ImageIcon, Mic, Square, Send, Check, CheckCheck } from 'lucide-react-native';
 import axios from 'axios';
 import io from 'socket.io-client';
+import * as ImagePicker from 'expo-image-picker';
+import { Audio } from 'expo-av';
 import { ChatState } from '../../../context/ChatProvider';
+import { CallState } from '../../../context/CallProvider';
+import GroupInfoModal from '../../../components/GroupInfoModal';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 let socket;
@@ -19,14 +25,20 @@ export default function ChatScreen() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [typing, setTyping] = useState(false);
+  
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  
+  // Audio Recording States
+  const [recording, setRecording] = useState();
+  const [isRecording, setIsRecording] = useState(false);
 
   const flatListRef = useRef(null);
   const { user, selectedChat, setSelectedChat } = ChatState();
+  const { startCall } = CallState();
   const router = useRouter();
 
   useEffect(() => {
-    // If arriving directly via URL, we might not have selectedChat set.
-    // In a full implementation, we'd fetch the chat details.
     if (!selectedChat) {
       router.replace('/(app)/chats');
     }
@@ -54,6 +66,13 @@ export default function ChatScreen() {
     socket.on('connected', () => setSocketConnected(true));
     socket.on('typing', () => setIsTyping(true));
     socket.on('stop typing', () => setIsTyping(false));
+    socket.on('message recieved', (newMsg) => {
+      if (!selectedChat || selectedChat._id !== newMsg.chat._id) {
+        // Notification logic
+      } else {
+        setMessages((prev) => [...prev, newMsg]);
+      }
+    });
 
     return () => {
       socket.disconnect();
@@ -64,37 +83,80 @@ export default function ChatScreen() {
     fetchMessages();
   }, [id]);
 
-  useEffect(() => {
-    const msgHandler = (newMsg) => {
-      if (!selectedChat || selectedChat._id !== newMsg.chat._id) {
-        // Notification logic would go here
-      } else {
-        setMessages((prev) => [...prev, newMsg]);
-      }
-    };
-    socket.on('message recieved', msgHandler);
-    return () => socket.off('message recieved', msgHandler);
-  }, [selectedChat]);
-
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return;
-    
-    socket.emit('stop typing', selectedChat._id);
-    const text = newMessage.trim();
-    setNewMessage('');
-    
+  const sendPayload = async (content, type = 'text', fileData = null) => {
     try {
       const { data } = await axios.post(
         `${BACKEND_URL}/api/message`,
-        { content: text, chatId: id, messageType: 'text' },
+        { content, chatId: id, messageType: type, fileData },
         { headers: { 'Content-type': 'application/json', Authorization: `Bearer ${user.token}` } }
       );
-      
       socket.emit('new message', data);
       setMessages((prev) => [...prev, data]);
     } catch (error) {
       console.error('Failed to send message', error);
     }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim()) return;
+    socket.emit('stop typing', selectedChat._id);
+    const text = newMessage.trim();
+    setNewMessage('');
+    await sendPayload(text, 'text');
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setUploadingMedia(true);
+      const base64Img = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      const data = new FormData();
+      data.append('file', base64Img);
+      data.append('upload_preset', 'talktome');
+      data.append('cloud_name', 'dzcslxxyi');
+
+      try {
+        const res = await fetch('https://api.cloudinary.com/v1_1/dzcslxxyi/image/upload', {
+          method: 'post',
+          body: data,
+        });
+        const cloudData = await res.json();
+        await sendPayload(cloudData.url.toString(), 'image');
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setUploadingMedia(false);
+      }
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      setRecording(recording);
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+    setRecording(undefined);
+    setIsRecording(false);
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI();
+    // In a real app, upload audio file to Cloudinary as raw/video.
+    // For prototype, we will send a mock voice note.
+    await sendPayload(uri, 'audio'); 
   };
 
   const typingHandler = (text) => {
@@ -113,6 +175,26 @@ export default function ChatScreen() {
     }, 3000);
   };
 
+  const getChatUser = () => {
+    if (!selectedChat) return null;
+    if (selectedChat.isGroupChat) return null;
+    return selectedChat.users[0]._id === user._id ? selectedChat.users[1] : selectedChat.users[0];
+  };
+
+  const chatUser = getChatUser();
+  const chatName = selectedChat?.isGroupChat ? selectedChat.chatName : chatUser?.name;
+  const chatAvatar = selectedChat?.isGroupChat 
+    ? 'https://www.gravatar.com/avatar/?d=mp' 
+    : (chatUser?.pic || 'https://www.gravatar.com/avatar/?d=mp');
+
+  const initiateCall = (type) => {
+    if (selectedChat.isGroupChat) {
+      alert("Group calling coming soon!");
+      return;
+    }
+    startCall(chatUser._id, user, type);
+  };
+
   const renderMessage = ({ item: m }) => {
     const isMe = m.sender?._id === user._id;
     return (
@@ -121,66 +203,124 @@ export default function ChatScreen() {
           <Text style={styles.senderName}>{m.sender?.name}</Text>
         )}
         <View style={[styles.messageBubble, isMe ? styles.myBubble : styles.theirBubble]}>
-          <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
-            {m.content}
-          </Text>
+          {m.messageType === 'image' ? (
+            <Image source={{ uri: m.content }} style={styles.messageImage} />
+          ) : m.messageType === 'audio' ? (
+            <View style={styles.audioMsg}>
+              <Mic color={isMe ? '#fff' : '#8b5cf6'} size={20} />
+              <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText, { marginLeft: 8 }]}>Voice Note</Text>
+            </View>
+          ) : (
+            <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
+              {m.content}
+            </Text>
+          )}
         </View>
-        <Text style={styles.timeText}>
-          {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </Text>
+        <View style={styles.timeRow}>
+          <Text style={styles.timeText}>
+            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+          {isMe && (
+            <View style={styles.readReceipt}>
+              <CheckCheck size={12} color="#0ea5e9" />
+            </View>
+          )}
+        </View>
       </View>
     );
   };
 
-  const chatName = selectedChat?.isGroupChat 
-    ? selectedChat.chatName 
-    : (selectedChat?.users[0]._id === user._id ? selectedChat?.users[1].name : selectedChat?.users[0].name);
-
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <Stack.Screen 
-        options={{ 
-          title: chatName || 'Chat',
-          headerBackTitle: 'Back'
-        }} 
-      />
-      
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#8b5cf6" />
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {/* Custom Header */}
+        <LinearGradient colors={['#1e1b4b', '#0f172a']} style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
+            <ChevronLeft color="#fff" size={28} />
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Image source={{ uri: chatAvatar }} style={styles.headerAvatar} />
+            <Text style={styles.headerTitle} numberOfLines={1}>{chatName}</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={() => initiateCall('video')} style={styles.headerIcon}>
+              <Video color="#a78bfa" size={22} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => initiateCall('audio')} style={styles.headerIcon}>
+              <Phone color="#a78bfa" size={20} />
+            </TouchableOpacity>
+            {selectedChat?.isGroupChat && (
+              <TouchableOpacity onPress={() => setShowGroupInfo(true)} style={styles.headerIcon}>
+                <Info color="#fff" size={22} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </LinearGradient>
+
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color="#8b5cf6" />
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item, index) => item._id || index.toString()}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          />
+        )}
+
+        {isTyping && <Text style={styles.typingText}>typing...</Text>}
+        {uploadingMedia && <ActivityIndicator size="small" color="#8b5cf6" style={{ alignSelf: 'flex-start', marginLeft: 16 }} />}
+
+        {/* Input Area */}
+        <View style={styles.inputContainer}>
+          <TouchableOpacity onPress={pickImage} style={styles.attachBtn}>
+            <ImageIcon color="#94a3b8" size={22} />
+          </TouchableOpacity>
+          
+          <TextInput
+            style={styles.input}
+            value={newMessage}
+            onChangeText={typingHandler}
+            placeholder={isRecording ? "Recording audio..." : "Message..."}
+            placeholderTextColor="rgba(255,255,255,0.4)"
+            multiline
+            editable={!isRecording}
+          />
+
+          {newMessage.trim() ? (
+            <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+              <Send color="#fff" size={18} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={[styles.recordButton, isRecording && styles.recordingActive]} 
+              onPressIn={startRecording} 
+              onPressOut={stopRecording}
+            >
+              {isRecording ? <Square color="#fff" size={18} /> : <Mic color="#fff" size={20} />}
+            </TouchableOpacity>
+          )}
         </View>
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item, index) => item._id || index.toString()}
-          renderItem={renderMessage}
-          contentContainerStyle={styles.listContainer}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
-      )}
 
-      {isTyping && <Text style={styles.typingText}>typing...</Text>}
+        {showGroupInfo && (
+          <GroupInfoModal 
+            visible={showGroupInfo} 
+            onClose={() => setShowGroupInfo(false)} 
+            fetchMessages={fetchMessages} 
+          />
+        )}
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={newMessage}
-          onChangeText={typingHandler}
-          placeholder="Type a message..."
-          placeholderTextColor="rgba(255,255,255,0.5)"
-          multiline
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendText}>Send</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -188,6 +328,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  headerIcon: {
+    padding: 8,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  headerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   center: {
     flex: 1,
@@ -199,8 +373,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   messageWrapper: {
-    maxWidth: '75%',
-    marginBottom: 12,
+    maxWidth: '80%',
+    marginBottom: 16,
   },
   myMessage: {
     alignSelf: 'flex-end',
@@ -213,73 +387,115 @@ const styles = StyleSheet.create({
   senderName: {
     fontSize: 12,
     color: '#a78bfa',
-    marginBottom: 2,
+    marginBottom: 4,
     marginLeft: 4,
+    fontWeight: '500',
   },
   messageBubble: {
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   myBubble: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#6366f1',
     borderBottomRightRadius: 4,
   },
   theirBubble: {
     backgroundColor: '#1e293b',
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+  },
+  audioMsg: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   messageText: {
-    fontSize: 15,
+    fontSize: 16,
+    lineHeight: 22,
   },
   myText: {
     color: '#fff',
   },
   theirText: {
-    color: '#fff',
+    color: '#f8fafc',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
   timeText: {
-    fontSize: 10,
+    fontSize: 11,
     color: 'rgba(255,255,255,0.4)',
-    marginTop: 4,
+  },
+  readReceipt: {
+    marginLeft: 4,
   },
   typingText: {
     color: '#a78bfa',
-    fontSize: 12,
-    paddingHorizontal: 16,
+    fontSize: 13,
+    paddingHorizontal: 20,
     paddingBottom: 8,
     fontStyle: 'italic',
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 12,
-    backgroundColor: '#1e293b',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopColor: 'rgba(255,255,255,0.05)',
     alignItems: 'flex-end',
+  },
+  attachBtn: {
+    padding: 12,
   },
   input: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(0,0,0,0.2)',
     color: '#fff',
-    borderRadius: 20,
+    borderRadius: 24,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
-    maxHeight: 100,
-    minHeight: 40,
+    maxHeight: 120,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   sendButton: {
-    marginLeft: 12,
-    marginBottom: 4,
+    marginLeft: 8,
+    width: 44,
+    height: 44,
     backgroundColor: '#8b5cf6',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 2,
   },
-  sendText: {
-    color: '#fff',
-    fontWeight: '600',
+  recordButton: {
+    marginLeft: 8,
+    width: 44,
+    height: 44,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  recordingActive: {
+    backgroundColor: '#ef4444',
   },
 });
