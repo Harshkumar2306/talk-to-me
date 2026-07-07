@@ -214,7 +214,7 @@ export default function ChatScreen() {
     const isMe = m.sender?._id === user._id;
     return (
       <View style={[styles.messageWrapper, isMe ? styles.myMessage : styles.theirMessage]}>
-        {!isMe && selectedChat?.isGroupChat && (
+        {!isMe && (
           <Text style={styles.senderName}>{m.sender?.name}</Text>
         )}
         <View style={[styles.messageBubble, isMe ? styles.myBubble : styles.theirBubble]}>
@@ -222,7 +222,7 @@ export default function ChatScreen() {
             <Image source={{ uri: m.content }} style={styles.messageImage} />
           ) : m.messageType === 'audio' ? (
             <View style={styles.audioMsg}>
-              <Mic color={isMe ? '#fff' : '#8b5cf6'} size={20} />
+              <Mic color={isMe ? '#fff' : '#a78bfa'} size={20} />
               <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText, { marginLeft: 8 }]}>Voice Note</Text>
             </View>
           ) : (
@@ -231,13 +231,13 @@ export default function ChatScreen() {
             </Text>
           )}
         </View>
-        <View style={styles.timeRow}>
+        <View style={[styles.timeRow, isMe ? { justifyContent: 'flex-end' } : { justifyContent: 'flex-start' }]}>
           <Text style={styles.timeText}>
             {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
           {isMe && (
             <View style={styles.readReceipt}>
-              <CheckCheck size={12} color="#0ea5e9" />
+              <CheckCheck size={14} color="#5c67d6" />
             </View>
           )}
         </View>
@@ -252,28 +252,35 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Custom Header */}
-        <LinearGradient colors={['#1e1b4b', '#0f172a']} style={styles.header}>
+        <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
             <ChevronLeft color="#fff" size={28} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Image source={{ uri: chatAvatar }} style={styles.headerAvatar} />
-            <Text style={styles.headerTitle} numberOfLines={1}>{chatName}</Text>
+            <View style={styles.avatarContainer}>
+              <Image source={{ uri: chatAvatar }} style={styles.headerAvatar} />
+              {/* Online indicator red dot */}
+              <View style={styles.onlineDot} />
+            </View>
+            <View style={styles.headerTextGroup}>
+              <Text style={styles.headerTitle} numberOfLines={1}>{chatName}</Text>
+              <Text style={styles.headerSubtitle}>
+                {selectedChat?.isGroupChat ? `${selectedChat.users.length} members` : 'Offline'}
+              </Text>
+            </View>
           </View>
           <View style={styles.headerActions}>
-            <TouchableOpacity onPress={() => initiateCall('video')} style={styles.headerIcon}>
-              <Video color="#a78bfa" size={22} />
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => initiateCall('audio')} style={styles.headerIcon}>
-              <Phone color="#a78bfa" size={20} />
+              <Phone color="#8b5cf6" size={20} />
             </TouchableOpacity>
-            {selectedChat?.isGroupChat && (
-              <TouchableOpacity onPress={() => setShowGroupInfo(true)} style={styles.headerIcon}>
-                <Info color="#fff" size={22} />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity onPress={() => initiateCall('video')} style={styles.headerIcon}>
+              <Video color="#8b5cf6" size={22} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowGroupInfo(true)} style={styles.headerIcon}>
+              <Text style={{ color: '#8b5cf6', fontSize: 24, paddingBottom: 8 }}>⋮</Text>
+            </TouchableOpacity>
           </View>
-        </LinearGradient>
+        </View>
 
         {loading ? (
           <View style={styles.center}>
@@ -308,20 +315,22 @@ export default function ChatScreen() {
           ) : (
             <>
               <TouchableOpacity onPress={() => setShowEmoji(true)} style={styles.attachBtn}>
-                <Smile color="#94a3b8" size={24} />
+                <Smile color="rgba(255,255,255,0.6)" size={24} />
               </TouchableOpacity>
               <TouchableOpacity onPress={pickImage} style={styles.attachBtn}>
-                <ImageIcon color="#94a3b8" size={22} />
+                <ImageIcon color="rgba(255,255,255,0.6)" size={24} />
               </TouchableOpacity>
               
-              <TextInput
-                style={styles.input}
-                value={newMessage}
-                onChangeText={typingHandler}
-                placeholder="Message..."
-                placeholderTextColor="rgba(255,255,255,0.4)"
-                multiline
-              />
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.input}
+                  value={newMessage}
+                  onChangeText={typingHandler}
+                  placeholder="Type a message..."
+                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  multiline
+                />
+              </View>
             </>
           )}
 
@@ -335,7 +344,7 @@ export default function ChatScreen() {
               onPressIn={startRecording} 
               onPressOut={stopRecording}
             >
-              {isRecording ? <Square color="#fff" size={18} /> : <Mic color="#fff" size={20} />}
+              {isRecording ? <Square color="#fff" size={18} /> : <Mic color="rgba(255,255,255,0.6)" size={24} />}
             </TouchableOpacity>
           )}
         </View>
@@ -375,14 +384,15 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#111827',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 12,
+    backgroundColor: '#1f2937',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
@@ -395,17 +405,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 4,
   },
-  headerAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  avatarContainer: {
+    position: 'relative',
     marginRight: 10,
+  },
+  headerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ef4444',
+    borderWidth: 2,
+    borderColor: '#1f2937',
+  },
+  headerTextGroup: {
+    justifyContent: 'center',
   },
   headerTitle: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '700',
-    flex: 1,
+    fontWeight: 'bold',
+  },
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
   },
   headerActions: {
     flexDirection: 'row',
@@ -421,8 +451,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   messageWrapper: {
-    maxWidth: '80%',
-    marginBottom: 16,
+    maxWidth: '85%',
+    marginBottom: 20,
   },
   myMessage: {
     alignSelf: 'flex-end',
@@ -433,30 +463,24 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   senderName: {
-    fontSize: 12,
-    color: '#a78bfa',
+    fontSize: 13,
+    color: '#7c3aed',
     marginBottom: 4,
     marginLeft: 4,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   messageBubble: {
-    padding: 12,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
   },
   myBubble: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#5c67d6',
     borderBottomRightRadius: 4,
   },
   theirBubble: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#1f2937',
     borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
   },
   messageImage: {
     width: 200,
@@ -482,11 +506,12 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 6,
+    width: '100%',
   },
   timeText: {
     fontSize: 11,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.5)',
   },
   readReceipt: {
     marginLeft: 4,
@@ -500,52 +525,48 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(30, 41, 59, 0.95)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'flex-end',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#1f2937',
+    alignItems: 'center',
   },
   attachBtn: {
-    padding: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 44,
+  },
+  inputWrapper: {
+    flex: 1,
+    backgroundColor: '#111827',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    marginHorizontal: 8,
+    justifyContent: 'center',
   },
   input: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)',
     color: '#fff',
-    borderRadius: 20,
-    paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
     maxHeight: 120,
     minHeight: 44,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    marginHorizontal: 4,
+    fontSize: 15,
   },
   sendButton: {
-    marginLeft: 8,
+    marginLeft: 4,
     width: 44,
     height: 44,
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#5c67d6',
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 2,
   },
   recordButton: {
-    marginLeft: 8,
+    marginLeft: 4,
     width: 44,
     height: 44,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 2,
   },
   recordingActive: {
     backgroundColor: '#ef4444',

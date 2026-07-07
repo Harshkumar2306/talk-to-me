@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { 
   Modal, View, Text, TextInput, TouchableOpacity, 
-  StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Platform
+  StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { X, Camera, Save, LogOut } from 'lucide-react-native';
+import { X, Camera, Save, LogOut, Edit2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { ChatState } from '../context/ChatProvider';
@@ -12,10 +11,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const { width } = Dimensions.get('window');
 
 const SettingsModal = ({ visible, onClose }) => {
   const { user, setUser } = ChatState();
   const [name, setName] = useState(user?.name || '');
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -70,7 +71,10 @@ const SettingsModal = ({ visible, onClose }) => {
   };
 
   const saveName = async () => {
-    if (!name.trim() || name === user.name) return;
+    if (!name.trim() || name === user.name) {
+      setIsEditing(false);
+      return;
+    }
     setLoading(true);
     try {
       const { data: updatedUser } = await axios.put(
@@ -81,6 +85,7 @@ const SettingsModal = ({ visible, onClose }) => {
       const newUserInfo = { ...user, name: updatedUser.name };
       setUser(newUserInfo);
       await AsyncStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+      setIsEditing(false);
     } catch (err) {
       console.error('Failed to update name', err);
     } finally {
@@ -89,59 +94,68 @@ const SettingsModal = ({ visible, onClose }) => {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
       <KeyboardAvoidingView 
         style={styles.modalOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.modalContent}>
-          <LinearGradient colors={['#1e1b4b', '#0f172a']} style={styles.header}>
-            <Text style={styles.headerTitle}>Profile Settings</Text>
+        <View style={styles.modalContainer}>
+          {/* Top Purple Banner */}
+          <View style={styles.topBanner}>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <X color="#fff" size={24} />
+              <X color="#fff" size={16} />
             </TouchableOpacity>
-          </LinearGradient>
+          </View>
           
+          {/* Bottom Dark Content */}
           <View style={styles.body}>
-            <View style={styles.avatarContainer}>
-              <Image 
-                source={{ uri: user?.pic || 'https://www.gravatar.com/avatar/?d=mp' }} 
-                style={styles.avatar} 
-              />
-              <TouchableOpacity style={styles.editAvatarBtn} onPress={pickImage}>
-                <Camera color="#fff" size={20} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Display Name</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="Enter your name"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
+            {/* Avatar overlapping the boundary */}
+            <View style={styles.avatarWrapper}>
+              <View style={styles.avatarContainer}>
+                <Image 
+                  source={{ uri: user?.pic || 'https://www.gravatar.com/avatar/?d=mp' }} 
+                  style={styles.avatar} 
                 />
-                <TouchableOpacity 
-                  style={[styles.saveBtn, name === user?.name && styles.saveBtnDisabled]} 
-                  onPress={saveName}
-                  disabled={name === user?.name || loading}
-                >
-                  {loading ? <ActivityIndicator size="small" color="#fff" /> : <Save color="#fff" size={20} />}
+                <TouchableOpacity style={styles.editAvatarBtn} onPress={pickImage}>
+                  {loading ? <ActivityIndicator size="small" color="#fff" /> : <Camera color="#fff" size={14} />}
                 </TouchableOpacity>
               </View>
             </View>
 
-            <View style={styles.infoGroup}>
-              <Text style={styles.label}>Email</Text>
-              <Text style={styles.infoText}>{user?.email}</Text>
-            </View>
+            <View style={styles.infoSection}>
+              {isEditing ? (
+                <View style={styles.editNameRow}>
+                  <TextInput
+                    style={styles.nameInput}
+                    value={name}
+                    onChangeText={setName}
+                    autoFocus
+                  />
+                  <TouchableOpacity onPress={saveName} style={styles.saveBtn}>
+                    <Text style={styles.saveBtnText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.nameRow}>
+                  <Text style={styles.userName}>{user?.name}</Text>
+                  <TouchableOpacity onPress={() => setIsEditing(true)}>
+                    <Edit2 color="rgba(255,255,255,0.5)" size={16} style={{ marginLeft: 8 }} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              <Text style={styles.userEmail}>{user?.email}</Text>
 
-            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-              <LogOut color="#ef4444" size={20} />
-              <Text style={styles.logoutText}>Log Out</Text>
-            </TouchableOpacity>
+              <View style={styles.statusBox}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>Active now</Text>
+              </View>
+
+              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                <LogOut color="#ef4444" size={16} />
+                <Text style={styles.logoutText}>Log Out</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -153,124 +167,150 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#0f172a',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    minHeight: '60%',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+  modalContainer: {
+    width: width * 0.85,
+    backgroundColor: '#1f2937',
+    borderRadius: 20,
+    overflow: 'visible',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+    marginTop: 50,
+  },
+  topBanner: {
+    height: 120,
+    backgroundColor: '#7c3aed',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    position: 'relative',
   },
   closeBtn: {
-    padding: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 20,
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    padding: 6,
+    borderRadius: 16,
   },
   body: {
-    padding: 24,
-    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    backgroundColor: '#1f2937',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  avatarWrapper: {
+    alignItems: 'flex-start',
+    marginTop: -50,
+    marginBottom: 16,
   },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 32,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: '#8b5cf6',
+    width: 100,
+    height: 100,
+    borderRadius: 36,
+    borderWidth: 4,
+    borderColor: '#1f2937',
+    backgroundColor: '#111827',
   },
   editAvatarBtn: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#8b5cf6',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#7c3aed',
+    width: 32,
+    height: 32,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#0f172a',
+    borderColor: '#1f2937',
   },
-  inputGroup: {
-    width: '100%',
-    marginBottom: 24,
+  infoSection: {
+    paddingTop: 8,
   },
-  label: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
-    marginBottom: 8,
-    fontWeight: '600',
-  },
-  inputRow: {
+  nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
   },
-  input: {
-    flex: 1,
-    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+  userName: {
     color: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  editNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  nameInput: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
   saveBtn: {
-    backgroundColor: '#8b5cf6',
-    padding: 16,
-    borderRadius: 12,
-    marginLeft: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginLeft: 8,
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
-  saveBtnDisabled: {
-    backgroundColor: 'rgba(139, 92, 246, 0.5)',
-  },
-  infoGroup: {
-    width: '100%',
-    marginBottom: 40,
-  },
-  infoText: {
+  saveBtnText: {
     color: '#fff',
-    fontSize: 16,
-    backgroundColor: 'rgba(30, 41, 59, 0.4)',
-    padding: 16,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  userEmail: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    marginBottom: 24,
+  },
+  statusBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 24,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10b981',
+    marginRight: 10,
+  },
+  statusText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 15,
   },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
+    alignSelf: 'center',
+    paddingVertical: 8,
   },
   logoutText: {
     color: '#ef4444',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
     marginLeft: 8,
   },
 });

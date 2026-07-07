@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, FlatList, 
-  StyleSheet, Modal, ActivityIndicator, Image, SafeAreaView
+  StyleSheet, Modal, ActivityIndicator, Image
 } from 'react-native';
 import { Search, X, UserPlus } from 'lucide-react-native';
 import axios from 'axios';
@@ -60,70 +60,86 @@ const SearchUsersModal = ({ visible, onClose }) => {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Search Users</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X color="#fff" size={24} />
-          </TouchableOpacity>
-        </View>
+    <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Search Users</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <X color="#94a3b8" size={20} />
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.searchBar}>
-          <Search color="rgba(255,255,255,0.5)" size={20} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name or email"
-            placeholderTextColor="rgba(255,255,255,0.5)"
-            value={search}
-            onChangeText={setSearch}
-            onSubmitEditing={handleSearch}
-            autoFocus
+          <View style={styles.searchBar}>
+            <Search color="rgba(255,255,255,0.5)" size={18} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name or email"
+              placeholderTextColor="rgba(255,255,255,0.5)"
+              value={search}
+              onChangeText={setSearch}
+              onSubmitEditing={handleSearch}
+              autoFocus
+            />
+            {loading ? (
+              <ActivityIndicator size="small" color="#8b5cf6" />
+            ) : (
+              <TouchableOpacity onPress={handleSearch} style={styles.searchActionBtn}>
+                <Text style={styles.searchActionText}>Go</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <FlatList
+            data={searchResult}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={styles.listContainer}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.userCard} onPress={() => accessChat(item._id)}>
+                <Image source={{ uri: item.pic || 'https://www.gravatar.com/avatar/?d=mp' }} style={styles.avatar} />
+                <View style={styles.userInfo}>
+                  <Text style={styles.userName}>{item.name}</Text>
+                  <Text style={styles.userEmail}>{item.email}</Text>
+                </View>
+                {loadingChat ? (
+                  <ActivityIndicator size="small" color="#8b5cf6" />
+                ) : (
+                  <UserPlus color="#8b5cf6" size={20} />
+                )}
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+              !loading && searchResult.length === 0 && search.length > 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No users found</Text>
+                </View>
+              ) : null
+            }
           />
-          {loading ? (
-            <ActivityIndicator size="small" color="#8b5cf6" />
-          ) : (
-            <TouchableOpacity onPress={handleSearch} style={styles.searchActionBtn}>
-              <Text style={styles.searchActionText}>Go</Text>
-            </TouchableOpacity>
-          )}
         </View>
-
-        <FlatList
-          data={searchResult}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.userCard} onPress={() => accessChat(item._id)}>
-              <Image source={{ uri: item.pic || 'https://www.gravatar.com/avatar/?d=mp' }} style={styles.avatar} />
-              <View style={styles.userInfo}>
-                <Text style={styles.userName}>{item.name}</Text>
-                <Text style={styles.userEmail}>{item.email}</Text>
-              </View>
-              {loadingChat ? (
-                <ActivityIndicator size="small" color="#8b5cf6" />
-              ) : (
-                <UserPlus color="#8b5cf6" size={20} />
-              )}
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={
-            !loading && searchResult.length === 0 && search.length > 0 ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No users found</Text>
-              </View>
-            ) : null
-          }
-        />
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '85%',
+    maxHeight: '80%',
+    backgroundColor: '#1f2937',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
   },
   header: {
     flexDirection: 'row',
@@ -131,28 +147,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   closeBtn: {
     padding: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 16,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    margin: 16,
+    backgroundColor: '#111827',
+    marginHorizontal: 16,
+    marginBottom: 16,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   searchIcon: {
     marginRight: 8,
@@ -160,18 +173,20 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: '#fff',
-    height: 48,
-    fontSize: 16,
+    height: 44,
+    fontSize: 14,
   },
   searchActionBtn: {
     paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#5c67d6',
+    borderRadius: 6,
+    marginLeft: 8,
   },
   searchActionText: {
-    color: '#a78bfa',
+    color: '#fff',
     fontWeight: '600',
+    fontSize: 14,
   },
   listContainer: {
     paddingHorizontal: 16,
@@ -180,39 +195,37 @@ const styles = StyleSheet.create({
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'rgba(30, 41, 59, 0.6)',
-    borderRadius: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderRadius: 12,
+    marginBottom: 8,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
   },
   userInfo: {
     flex: 1,
   },
   userName: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   userEmail: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 13,
+    fontSize: 12,
   },
   emptyContainer: {
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: 20,
   },
   emptyText: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
+    fontSize: 14,
   },
 });
 

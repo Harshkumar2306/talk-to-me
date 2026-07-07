@@ -3,8 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator, 
 import axios from 'axios';
 import { ChatState } from '../context/ChatProvider';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Search, Users, MessageSquarePlus } from 'lucide-react-native';
+import { Search, Users, MessageSquare, Plus, Bell, Settings } from 'lucide-react-native';
 import SearchUsersModal from './SearchUsersModal';
 import CreateGroupModal from './CreateGroupModal';
 import SettingsModal from './SettingsModal';
@@ -73,11 +72,7 @@ const MyChats = () => {
             source={{ uri: !chat.isGroupChat ? (getSenderPic(user, chat.users) || 'https://www.gravatar.com/avatar/?d=mp') : 'https://www.gravatar.com/avatar/?d=mp' }}
             style={styles.avatar}
           />
-          {chat.isGroupChat && (
-            <View style={styles.groupBadge}>
-              <Users size={12} color="#fff" />
-            </View>
-          )}
+          <View style={styles.groupBadge} />
         </View>
         <View style={styles.chatInfo}>
           <Text style={styles.chatName} numberOfLines={1}>
@@ -92,76 +87,77 @@ const MyChats = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#0f172a', '#1e1b4b']}
-      style={styles.container}
-    >
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Messages</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => setShowSearch(true)}>
-              <Search color="#fff" size={22} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.avatarBtn} onPress={() => setShowSettings(true)}>
-              <Image 
-                source={{ uri: user?.pic || 'https://www.gravatar.com/avatar/?d=mp' }} 
-                style={styles.headerAvatar} 
-              />
-            </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <View style={styles.logoIconBg}>
+            <MessageSquare color="#a78bfa" size={20} />
           </View>
+          <Text style={styles.headerTitle}>TalkToMe</Text>
         </View>
-
-        {loadingChats ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color="#8b5cf6" />
-          </View>
-        ) : chats.length === 0 ? (
-          <View style={styles.center}>
-            <View style={styles.emptyIconCircle}>
-              <Search color="rgba(167, 139, 250, 0.5)" size={48} />
-            </View>
-            <Text style={styles.emptyText}>No conversations yet.</Text>
-            <Text style={styles.emptySubtext}>Tap the search icon to find people!</Text>
-            <TouchableOpacity style={styles.startChatBtn} onPress={() => setShowSearch(true)}>
-              <Text style={styles.startChatText}>Start a Chat</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlatList
-            data={chats}
-            keyExtractor={(item) => item._id}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-
-        {/* FAB for new group */}
-        <TouchableOpacity 
-          style={styles.fab}
-          onPress={() => setShowCreateGroup(true)}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#8b5cf6', '#6366f1']}
-            style={styles.fabGradient}
-          >
-            <MessageSquarePlus color="#fff" size={24} />
-          </LinearGradient>
+        <TouchableOpacity style={styles.groupBtn} onPress={() => setShowCreateGroup(true)}>
+          <Plus color="#fff" size={16} />
+          <Text style={styles.groupBtnText}>Group</Text>
         </TouchableOpacity>
+      </View>
 
-        {showSearch && <SearchUsersModal visible={showSearch} onClose={() => setShowSearch(false)} />}
-        {showCreateGroup && <CreateGroupModal visible={showCreateGroup} onClose={() => setShowCreateGroup(false)} />}
-        {showSettings && <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />}
-      </SafeAreaView>
-    </LinearGradient>
+      {loadingChats ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#5c67d6" />
+        </View>
+      ) : chats.length === 0 ? (
+        <View style={styles.center}>
+          <View style={styles.emptyIconCircle}>
+            <Search color="rgba(92, 103, 214, 0.5)" size={48} />
+          </View>
+          <Text style={styles.emptyText}>No conversations yet.</Text>
+          <Text style={styles.emptySubtext}>Tap the search icon to find people!</Text>
+          <TouchableOpacity style={styles.startChatBtn} onPress={() => setShowSearch(true)}>
+            <Text style={styles.startChatText}>Start a Chat</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={chats}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem} onPress={() => setShowSettings(true)}>
+          <View style={styles.navAvatarBorder}>
+            <Image 
+              source={{ uri: user?.pic || 'https://www.gravatar.com/avatar/?d=mp' }} 
+              style={styles.navAvatar} 
+            />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => setShowSearch(true)}>
+          <Search color="rgba(255,255,255,0.6)" size={24} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Bell color="rgba(255,255,255,0.6)" size={24} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => setShowSettings(true)}>
+          <Settings color="rgba(255,255,255,0.6)" size={24} />
+        </TouchableOpacity>
+      </View>
+
+      {showSearch && <SearchUsersModal visible={showSearch} onClose={() => setShowSearch(false)} />}
+      {showCreateGroup && <CreateGroupModal visible={showCreateGroup} onClose={() => setShowCreateGroup(false)} />}
+      {showSettings && <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#1f2937',
   },
   header: {
     flexDirection: 'row',
@@ -170,38 +166,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoIconBg: {
+    backgroundColor: 'rgba(92, 103, 214, 0.2)',
+    padding: 8,
+    borderRadius: 8,
+    marginRight: 10,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
-    letterSpacing: -0.5,
   },
-  headerActions: {
+  groupBtn: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#5c67d6',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
-  avatarBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: '#8b5cf6',
-    overflow: 'hidden',
-  },
-  headerAvatar: {
-    width: '100%',
-    height: '100%',
+  groupBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 4,
+    fontSize: 14,
   },
   center: {
     flex: 1,
@@ -243,69 +238,76 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 100,
   },
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 41, 59, 0.6)',
-    borderRadius: 20,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.02)',
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: 14,
+    marginRight: 16,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
   },
   groupBadge: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    backgroundColor: '#8b5cf6',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#ef4444', // Red status dot to match screenshot
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#1e293b',
+    borderColor: '#1f2937',
   },
   chatInfo: {
     flex: 1,
   },
   chatName: {
     color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 4,
   },
   latestMessage: {
-    color: 'rgba(255,255,255,0.5)',
+    color: 'rgba(255,255,255,0.6)',
     fontSize: 14,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    shadowColor: '#8b5cf6',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+  bottomNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#1f2937',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+    paddingBottom: 20, // for safe area
   },
-  fabGradient: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  navItem: {
+    padding: 10,
+  },
+  navAvatarBorder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#5c67d6',
+    padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  navAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
 });
 
