@@ -25,13 +25,13 @@ const HomePage = () => {
       <div className="container mx-auto flex flex-col lg:flex-row items-center justify-center p-6 z-10 h-full overflow-y-auto gap-12 lg:gap-24">
         
         {/* Left Side: Branding & Info */}
-        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left max-w-xl">
-          <div className="bg-[#1e293b]/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
+        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left max-w-xl gap-6">
+          <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="mb-6"
+            className="w-full"
           >
             <div className="flex flex-row items-center justify-center lg:justify-start gap-4 mb-6">
               <div className="inline-flex items-center justify-center shadow-2xl rounded-2xl overflow-hidden border border-white/10">
@@ -45,12 +45,14 @@ const HomePage = () => {
               Experience seamless, secure, and lightning-fast communication. Connect with your friends, share moments, and stay in touch wherever you go.
             </p>
           </motion.div>
+          </div>
 
+          <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 w-full"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 w-full"
           >
             <div className="flex flex-col items-center lg:items-start gap-2">
               <div className="p-3 bg-brand-500/20 rounded-2xl text-brand-400">
