@@ -91,6 +91,7 @@ const HomePage = () => {
               <Download className="text-white opacity-80 group-hover:opacity-100 transition-opacity" size={20} />
             </a>
           </motion.div>
+          </div>
         </div>
 
         {/* Right Side: Auth Box */}
