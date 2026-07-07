@@ -1,3 +1,7 @@
+import 'react-native-gesture-handler';
+import { registerGlobals } from 'react-native-webrtc';
+registerGlobals();
+
 import { Stack } from 'expo-router';
 import ChatProvider from '../context/ChatProvider';
 import { CallProvider } from '../context/CallProvider';
