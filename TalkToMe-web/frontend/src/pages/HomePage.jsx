@@ -93,14 +93,15 @@ const HomePage = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="mt-8"
         >
-          <button 
-            onClick={() => alert("Android APK is currently being generated. Check back soon!")}
+          <a 
+            href="/TalkToMe.apk" 
+            download="TalkToMe.apk"
             className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all duration-300 shadow-lg group"
           >
             <Smartphone className="text-gray-400 group-hover:text-brand-400 transition-colors" size={20} />
             <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">Download App for Android</span>
             <Download className="text-gray-400 group-hover:text-brand-400 transition-colors" size={18} />
-          </button>
+          </a>
         </motion.div>
       </div>
     </div>
