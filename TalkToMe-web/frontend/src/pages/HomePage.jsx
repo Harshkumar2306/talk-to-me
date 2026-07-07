@@ -111,7 +111,7 @@ const HomePage = () => {
             {AuthBox}
           </div>
 
-          <div className={`bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start ${showAuthOnMobile ? 'hidden lg:flex' : 'flex'}`}>
+          <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
