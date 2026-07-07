@@ -212,7 +212,7 @@ const GroupInfoModal = ({ visible, onClose, fetchMessages, fetchChats }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#1f2937',
   },
   header: {
     flexDirection: 'row',
@@ -221,7 +221,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#111827',
   },
   headerTitle: {
     color: '#fff',
@@ -236,9 +237,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   updateBtn: {
-    backgroundColor: '#0ea5e9',
+    backgroundColor: '#5c67d6',
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     justifyContent: 'center',
   },
   createText: {
@@ -262,9 +263,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#111827',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.05)',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
   userChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#5c67d6',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 999,
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    backgroundColor: '#111827',
     borderRadius: 16,
     marginBottom: 8,
     borderWidth: 1,
@@ -322,7 +323,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   leaveBtn: {
-    backgroundColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   leaveBtnText: {
-    color: '#fff',
+    color: '#ef4444',
     fontWeight: 'bold',
     fontSize: 16,
   },

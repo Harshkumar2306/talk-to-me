@@ -5,13 +5,13 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronLeft, Info, Video, Phone, Image as ImageIcon, Mic, Square, Send, Check, CheckCheck } from 'lucide-react-native';
+import { ChevronLeft, Info, Video, Phone, Image as ImageIcon, Mic, Square, Send, Check, CheckCheck, Play, Pause } from 'lucide-react-native';
 import axios from 'axios';
 import io from 'socket.io-client';
 import * as ImagePicker from 'expo-image-picker';
 import EmojiPicker from 'rn-emoji-keyboard';
 import { Smile } from 'lucide-react-native';
-import { useAudioRecorder, RecordingPresets, setAudioModeAsync } from 'expo-audio';
+import { useAudioRecorder, RecordingPresets, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { ChatState } from '../../../context/ChatProvider';
 import { CallState } from '../../../context/CallProvider';
 import GroupInfoModal from '../../../components/GroupInfoModal';
@@ -41,7 +41,7 @@ export default function ChatScreen() {
   const recordingTimer = useRef(null);
 
   const flatListRef = useRef(null);
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
   const { startCall } = CallState();
   const router = useRouter();
 
@@ -75,7 +75,9 @@ export default function ChatScreen() {
     socket.on('stop typing', () => setIsTyping(false));
     socket.on('message recieved', (newMsg) => {
       if (!selectedChat || selectedChat._id !== newMsg.chat._id) {
-        // Notification logic
+        if (!notification.some((n) => n._id === newMsg._id)) {
+          setNotification([newMsg, ...notification]);
+        }
       } else {
         setMessages((prev) => [...prev, newMsg]);
       }
@@ -210,6 +212,50 @@ export default function ChatScreen() {
     startCall(chatUser._id, user, type);
   };
 
+  const VoiceNotePlayer = ({ uri, isMe }) => {
+    const player = useAudioPlayer({ uri });
+    const status = useAudioPlayerStatus(player);
+
+    const handlePlayPause = () => {
+      if (status.playing) {
+        player.pause();
+      } else {
+        if (status.currentTime >= status.duration) {
+          player.seekTo(0);
+        }
+        player.play();
+      }
+    };
+
+    const formatProgress = (ms) => {
+      if (!ms) return '0:00';
+      const seconds = Math.floor(ms / 1000);
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    return (
+      <View style={styles.audioMsg}>
+        <TouchableOpacity onPress={handlePlayPause} style={styles.playBtn}>
+          {status.playing ? (
+            <Pause color={isMe ? '#fff' : '#a78bfa'} size={20} />
+          ) : (
+            <Play color={isMe ? '#fff' : '#a78bfa'} size={20} />
+          )}
+        </TouchableOpacity>
+        <View style={styles.audioProgressGroup}>
+          <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText, { fontWeight: 'bold' }]}>
+            Voice Note
+          </Text>
+          <Text style={[styles.audioProgressText, { color: isMe ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.5)' }]}>
+            {formatProgress(status.currentTime)} / {formatProgress(status.duration)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderMessage = ({ item: m }) => {
     const isMe = m.sender?._id === user._id;
     return (
@@ -221,10 +267,7 @@ export default function ChatScreen() {
           {m.messageType === 'image' ? (
             <Image source={{ uri: m.content }} style={styles.messageImage} />
           ) : m.messageType === 'audio' ? (
-            <View style={styles.audioMsg}>
-              <Mic color={isMe ? '#fff' : '#a78bfa'} size={20} />
-              <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText, { marginLeft: 8 }]}>Voice Note</Text>
-            </View>
+            <VoiceNotePlayer uri={m.content} isMe={isMe} />
           ) : (
             <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
               {m.content}
@@ -492,6 +535,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
+  },
+  playBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  audioProgressGroup: {
+    flexDirection: 'column',
+  },
+  audioProgressText: {
+    fontSize: 11,
+    marginTop: 2,
   },
   messageText: {
     fontSize: 16,

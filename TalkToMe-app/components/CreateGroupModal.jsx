@@ -168,7 +168,7 @@ const CreateGroupModal = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#1f2937',
   },
   header: {
     flexDirection: 'row',
@@ -177,7 +177,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#111827',
   },
   headerTitle: {
     color: '#fff',
@@ -192,10 +193,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   createBtn: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#5c67d6',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: 8,
   },
   createText: {
     color: '#fff',
@@ -215,9 +216,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#111827',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.05)',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   userChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#5c67d6',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 999,
@@ -249,15 +250,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    backgroundColor: '#111827',
     borderRadius: 16,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.05)',
   },
   userCardSelected: {
-    borderColor: '#8b5cf6',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: '#5c67d6',
+    backgroundColor: 'rgba(92, 103, 214, 0.1)',
   },
   avatar: {
     width: 40,
@@ -282,7 +283,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#5c67d6',
     justifyContent: 'center',
     alignItems: 'center',
   },

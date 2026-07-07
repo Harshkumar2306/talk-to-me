@@ -7,6 +7,7 @@ import { Search, Users, MessageSquare, Plus, Bell, Settings } from 'lucide-react
 import SearchUsersModal from './SearchUsersModal';
 import CreateGroupModal from './CreateGroupModal';
 import SettingsModal from './SettingsModal';
+import NotificationsModal from './NotificationsModal';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -15,8 +16,9 @@ const MyChats = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  const { user, chats, setChats, setSelectedChat } = ChatState();
+  const { user, chats, setChats, setSelectedChat, notification } = ChatState();
   const router = useRouter();
 
   const fetchChats = async () => {
@@ -139,8 +141,15 @@ const MyChats = () => {
         <TouchableOpacity style={styles.navItem} onPress={() => setShowSearch(true)}>
           <Search color="rgba(255,255,255,0.6)" size={24} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Bell color="rgba(255,255,255,0.6)" size={24} />
+        <TouchableOpacity style={styles.navItem} onPress={() => setShowNotifications(true)}>
+          <View style={{ position: 'relative' }}>
+            <Bell color="rgba(255,255,255,0.6)" size={24} />
+            {notification.length > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{notification.length}</Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => setShowSettings(true)}>
           <Settings color="rgba(255,255,255,0.6)" size={24} />
@@ -150,6 +159,7 @@ const MyChats = () => {
       {showSearch && <SearchUsersModal visible={showSearch} onClose={() => setShowSearch(false)} />}
       {showCreateGroup && <CreateGroupModal visible={showCreateGroup} onClose={() => setShowCreateGroup(false)} />}
       {showSettings && <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />}
+      {showNotifications && <NotificationsModal visible={showNotifications} onClose={() => setShowNotifications(false)} />}
     </SafeAreaView>
   );
 };
@@ -308,6 +318,23 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 12,
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: 'bold',
   },
 });
 
