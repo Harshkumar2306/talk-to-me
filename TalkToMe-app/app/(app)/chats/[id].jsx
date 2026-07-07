@@ -9,7 +9,7 @@ import { ChevronLeft, Info, Video, Phone, Image as ImageIcon, Mic, Square, Send,
 import axios from 'axios';
 import io from 'socket.io-client';
 import * as ImagePicker from 'expo-image-picker';
-// import { Audio } from 'expo-av'; // Temporarily disabled due to Android JSI crash
+import { useAudioRecorder, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import { ChatState } from '../../../context/ChatProvider';
 import { CallState } from '../../../context/CallProvider';
 import GroupInfoModal from '../../../components/GroupInfoModal';
@@ -30,7 +30,7 @@ export default function ChatScreen() {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   
   // Audio Recording States
-  const [recording, setRecording] = useState();
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
 
   const flatListRef = useRef(null);
@@ -138,27 +138,25 @@ export default function ChatScreen() {
 
   const startRecording = async () => {
     try {
-      console.log('Audio recording temporarily disabled');
-      // await Audio.requestPermissionsAsync();
-      // await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      // const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      // setRecording(recording);
-      // setIsRecording(true);
+      await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
+      await audioRecorder.prepareToRecordAsync();
+      audioRecorder.record();
+      setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
     }
   };
 
   const stopRecording = async () => {
-    if (!recording) return;
-    setRecording(undefined);
-    setIsRecording(false);
     try {
-      // await recording.stopAndUnloadAsync();
-      // const uri = recording.getURI();
+      await audioRecorder.stop();
+      setIsRecording(false);
       
-      // In a real app, upload audio file to Cloudinary as raw/video.
-      // await sendPayload(uri, 'audio'); 
+      const uri = audioRecorder.uri;
+      if (uri) {
+        // In a real app, upload audio file to Cloudinary as raw/video.
+        await sendPayload(uri, 'audio');
+      }
     } catch (err) {
       console.error('Failed to stop recording', err);
     }
