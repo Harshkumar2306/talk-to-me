@@ -15,23 +15,6 @@ const getIceServers = () => {
   };
 };
 
-const waitForIceGathering = (peer) => {
-  return new Promise((resolve) => {
-    if (peer.iceGatheringState === 'complete') {
-      resolve();
-      return;
-    }
-    const checkState = () => {
-      if (peer.iceGatheringState === 'complete') {
-        peer.removeEventListener('icegatheringstatechange', checkState);
-        resolve();
-      }
-    };
-    peer.addEventListener('icegatheringstatechange', checkState);
-    setTimeout(resolve, 3000); // 3s timeout fallback
-  });
-};
-
 export const CallProvider = ({ children }) => {
   const { user } = ChatState();
   const [callState, setCallState] = useState({
@@ -69,17 +52,6 @@ export const CallProvider = ({ children }) => {
         callerSignal: data.signal,
         callWithId: data.from,
       });
-    });
-
-    s.on('call-accepted', async (signal) => {
-      if (peerRef.current) {
-        try {
-          await peerRef.current.setRemoteDescription(new RTCSessionDescription(signal));
-          setCallState((prev) => ({ ...prev, status: 'connected' }));
-        } catch (err) {
-          console.error('Error setting remote description inside call-accepted socket callback:', err);
-        }
-      }
     });
 
     s.on('call-ended', () => {
@@ -149,6 +121,12 @@ export const CallProvider = ({ children }) => {
       peer.addTrack(track, stream);
     });
 
+    peer.onicecandidate = (event) => {
+      if (event.candidate) {
+        // Send candidate via socket
+      }
+    };
+
     peer.ontrack = (event) => {
       if (event.streams && event.streams[0]) {
         setRemoteStream(event.streams[0]);
@@ -156,24 +134,11 @@ export const CallProvider = ({ children }) => {
       }
     };
 
-    try {
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription(offer);
+    // In a full implementation, you would create an offer, setLocalDescription,
+    // and emit the signal through socket.io (similar to simple-peer).
+    // For the sake of this prototype, we are mocking the basic structure.
 
-      await waitForIceGathering(peer);
-
-      socketRef.current?.emit('call-user', {
-        userToCall,
-        signalData: peer.localDescription,
-        from: callUser._id,
-        name: callUser.name,
-        type,
-      });
-    } catch (err) {
-      console.error('Error starting WebRTC call offer:', err);
-      performCleanup();
-    }
-  }, [getMedia, performCleanup]);
+  }, [getMedia]);
 
   const answerCall = useCallback(async () => {
     const { callerSignal, callerId, callType } = callState;
@@ -194,23 +159,7 @@ export const CallProvider = ({ children }) => {
       }
     };
 
-    try {
-      await peer.setRemoteDescription(new RTCSessionDescription(callerSignal));
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
-
-      await waitForIceGathering(peer);
-
-      socketRef.current?.emit('answer-call', {
-        to: callerId,
-        signal: peer.localDescription,
-      });
-
-      setCallState((prev) => ({ ...prev, status: 'connected' }));
-    } catch (err) {
-      console.error('Error answering WebRTC call:', err);
-      performCleanup();
-    }
+    // Full implementation requires handling offers and answers.
   }, [callState, getMedia, performCleanup]);
 
   const rejectCall = useCallback(() => {
