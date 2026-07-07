@@ -9,6 +9,8 @@ import { ChevronLeft, Info, Video, Phone, Image as ImageIcon, Mic, Square, Send,
 import axios from 'axios';
 import io from 'socket.io-client';
 import * as ImagePicker from 'expo-image-picker';
+import EmojiPicker from 'rn-emoji-keyboard';
+import { Smile } from 'lucide-react-native';
 import { useAudioRecorder, RecordingPresets, setAudioModeAsync } from 'expo-audio';
 import { ChatState } from '../../../context/ChatProvider';
 import { CallState } from '../../../context/CallProvider';
@@ -29,9 +31,14 @@ export default function ChatScreen() {
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   
+  // Emoji Picker State
+  const [showEmoji, setShowEmoji] = useState(false);
+
   // Audio Recording States
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const recordingTimer = useRef(null);
 
   const flatListRef = useRef(null);
   const { user, selectedChat, setSelectedChat } = ChatState();
@@ -142,6 +149,10 @@ export default function ChatScreen() {
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
       setIsRecording(true);
+      setRecordingDuration(0);
+      recordingTimer.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
     } catch (err) {
       console.error('Failed to start recording', err);
     }
@@ -149,12 +160,13 @@ export default function ChatScreen() {
 
   const stopRecording = async () => {
     try {
+      if (recordingTimer.current) clearInterval(recordingTimer.current);
       await audioRecorder.stop();
       setIsRecording(false);
+      setRecordingDuration(0);
       
       const uri = audioRecorder.uri;
       if (uri) {
-        // In a real app, upload audio file to Cloudinary as raw/video.
         await sendPayload(uri, 'audio');
       }
     } catch (err) {
@@ -285,21 +297,35 @@ export default function ChatScreen() {
 
         {/* Input Area */}
         <View style={styles.inputContainer}>
-          <TouchableOpacity onPress={pickImage} style={styles.attachBtn}>
-            <ImageIcon color="#94a3b8" size={22} />
-          </TouchableOpacity>
-          
-          <TextInput
-            style={styles.input}
-            value={newMessage}
-            onChangeText={typingHandler}
-            placeholder={isRecording ? "Recording audio..." : "Message..."}
-            placeholderTextColor="rgba(255,255,255,0.4)"
-            multiline
-            editable={!isRecording}
-          />
+          {isRecording ? (
+            <View style={styles.recordingUI}>
+              <View style={styles.pulsingDot} />
+              <Text style={styles.recordingTime}>
+                {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
+              </Text>
+              <Text style={styles.recordingText}>Slide to cancel {'<'}</Text>
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity onPress={() => setShowEmoji(true)} style={styles.attachBtn}>
+                <Smile color="#94a3b8" size={24} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={pickImage} style={styles.attachBtn}>
+                <ImageIcon color="#94a3b8" size={22} />
+              </TouchableOpacity>
+              
+              <TextInput
+                style={styles.input}
+                value={newMessage}
+                onChangeText={typingHandler}
+                placeholder="Message..."
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                multiline
+              />
+            </>
+          )}
 
-          {newMessage.trim() ? (
+          {newMessage.trim() && !isRecording ? (
             <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
               <Send color="#fff" size={18} />
             </TouchableOpacity>
@@ -313,6 +339,25 @@ export default function ChatScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        <EmojiPicker 
+          onEmojiSelected={(emoji) => setNewMessage(prev => prev + emoji.emoji)}
+          open={showEmoji}
+          onClose={() => setShowEmoji(false)}
+          theme={{
+            backdrop: 'rgba(0,0,0,0.6)',
+            knob: '#8b5cf6',
+            container: '#0f172a',
+            header: '#fff',
+            skinTonesContainer: '#1e293b',
+            category: {
+              icon: '#a78bfa',
+              iconActive: '#fff',
+              container: '#1e293b',
+              containerActive: '#8b5cf6'
+            }
+          }}
+        />
 
         {showGroupInfo && (
           <GroupInfoModal 
@@ -455,21 +500,24 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.05)',
     alignItems: 'flex-end',
   },
   attachBtn: {
-    padding: 12,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 44,
   },
   input: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.2)',
     color: '#fff',
-    borderRadius: 24,
+    borderRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
@@ -477,6 +525,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.05)',
+    marginHorizontal: 4,
   },
   sendButton: {
     marginLeft: 8,
@@ -500,5 +549,32 @@ const styles = StyleSheet.create({
   },
   recordingActive: {
     backgroundColor: '#ef4444',
+  },
+  recordingUI: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 24,
+    height: 44,
+    paddingHorizontal: 16,
+    marginRight: 8,
+  },
+  pulsingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ef4444',
+    marginRight: 10,
+  },
+  recordingTime: {
+    color: '#ef4444',
+    fontWeight: 'bold',
+    fontSize: 16,
+    flex: 1,
+  },
+  recordingText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
   },
 });

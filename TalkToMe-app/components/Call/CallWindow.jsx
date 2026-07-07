@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions, Animated } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { CallState } from '../../context/CallProvider';
 import { PhoneOff, Mic, MicOff, Video, VideoOff } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,6 +13,27 @@ const CallWindow = () => {
     endCall, toggleMute, toggleVideo, 
     isMuted, isVideoOff 
   } = CallState();
+
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (callState.status === 'calling' || callState.status === 'connected') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [callState.status]);
 
   if (callState.status === 'idle' || callState.status === 'incoming') return null;
 
@@ -27,17 +49,22 @@ const CallWindow = () => {
             objectFit="cover"
           />
         ) : (
-          <View style={styles.audioOnlyContainer}>
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>
-                {callState.callerName ? callState.callerName[0].toUpperCase() : 'U'}
-              </Text>
+          <LinearGradient colors={['#1e1b4b', '#0f172a']} style={styles.audioOnlyContainer}>
+            <View style={styles.avatarWrapper}>
+              <Animated.View style={[styles.pulseCircle, { transform: [{ scale: pulseAnim }], opacity: pulseAnim.interpolate({ inputRange: [1, 1.2], outputRange: [0.3, 0] }) }]} />
+              <Animated.View style={[styles.pulseCircle, { transform: [{ scale: pulseAnim }], opacity: pulseAnim.interpolate({ inputRange: [1, 1.2], outputRange: [0.5, 0] }), position: 'absolute', width: 220, height: 220, borderRadius: 110 }]} />
+              
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarText}>
+                  {callState.callerName ? callState.callerName[0].toUpperCase() : 'U'}
+                </Text>
+              </View>
             </View>
             <Text style={styles.callerName}>{callState.callerName || 'Unknown User'}</Text>
             <Text style={styles.statusText}>
               {callState.status === 'calling' ? 'Calling...' : '00:00'}
             </Text>
-          </View>
+          </LinearGradient>
         )}
 
         {/* Local Video (Picture in Picture) */}
@@ -82,32 +109,56 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   audioOnlyContainer: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 40,
+    width: 280,
+    height: 280,
+  },
+  pulseCircle: {
+    position: 'absolute',
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: '#8b5cf6',
+  },
   avatarPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     backgroundColor: '#334155',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    borderWidth: 4,
+    borderColor: '#1e1b4b',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
   avatarText: {
-    fontSize: 48,
+    fontSize: 56,
     color: '#fff',
     fontWeight: 'bold',
   },
   callerName: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: '600',
-    marginBottom: 8,
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 12,
   },
   statusText: {
-    color: '#94a3b8',
-    fontSize: 16,
+    color: '#a78bfa',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 1,
   },
   localVideoContainer: {
     position: 'absolute',

@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Users, MessageSquarePlus } from 'lucide-react-native';
 import SearchUsersModal from './SearchUsersModal';
 import CreateGroupModal from './CreateGroupModal';
+import SettingsModal from './SettingsModal';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -14,6 +15,7 @@ const MyChats = () => {
   const [loadingChats, setLoadingChats] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const { user, chats, setChats, setSelectedChat } = ChatState();
   const router = useRouter();
@@ -101,6 +103,12 @@ const MyChats = () => {
             <TouchableOpacity style={styles.iconBtn} onPress={() => setShowSearch(true)}>
               <Search color="#fff" size={22} />
             </TouchableOpacity>
+            <TouchableOpacity style={styles.avatarBtn} onPress={() => setShowSettings(true)}>
+              <Image 
+                source={{ uri: user?.pic || 'https://www.gravatar.com/avatar/?d=mp' }} 
+                style={styles.headerAvatar} 
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -145,6 +153,7 @@ const MyChats = () => {
 
         {showSearch && <SearchUsersModal visible={showSearch} onClose={() => setShowSearch(false)} />}
         {showCreateGroup && <CreateGroupModal visible={showCreateGroup} onClose={() => setShowCreateGroup(false)} />}
+        {showSettings && <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -181,6 +190,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.05)',
+  },
+  avatarBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#8b5cf6',
+    overflow: 'hidden',
+  },
+  headerAvatar: {
+    width: '100%',
+    height: '100%',
   },
   center: {
     flex: 1,
