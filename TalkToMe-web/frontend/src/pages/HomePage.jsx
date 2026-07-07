@@ -94,7 +94,7 @@ const HomePage = () => {
           className="mt-8"
         >
           <a 
-            href="/TalkToMe.apk" 
+            href="https://github.com/Harshkumar2306/talk-to-me/releases/latest/download/TalkToMe.apk" 
             download="TalkToMe.apk"
             className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all duration-300 shadow-lg group"
           >

@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+
+permissions:
+  contents: write # Required for creating a GitHub Release
+
+jobs:
+  build:
+    name: Build APK and Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install dependencies
+        working-directory: ./TalkToMe-app
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Native Android Code (Expo Prebuild)
+        working-directory: ./TalkToMe-app
+        run: npx expo prebuild --platform android
+
+      - name: Build APK (Assemble Release)
+        working-directory: ./TalkToMe-app/android
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK
+        working-directory: ./TalkToMe-app/android/app/build/outputs/apk/release
+        run: mv app-release.apk TalkToMe.apk
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TalkToMe-APK
+          path: ./TalkToMe-app/android/app/build/outputs/apk/release/TalkToMe.apk
+
+      - name: Create or Update Latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "TalkToMe Android App"
+          tag_name: "latest"
+          files: ./TalkToMe-app/android/app/build/outputs/apk/release/TalkToMe.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
