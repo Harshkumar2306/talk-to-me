@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
-import { RTCPeerConnection, RTCIceCandidate, RTCSessionDescription, mediaDevices } from 'react-native-webrtc';
+import { RTCPeerConnection, RTCIceCandidate, RTCSessionDescription, mediaDevices, MediaStream } from 'react-native-webrtc';
 import { ChatState } from './ChatProvider';
 
 const CallContext = createContext(null);
@@ -13,6 +13,39 @@ const getIceServers = () => {
       { urls: 'stun:stun1.l.google.com:19302' },
     ],
   };
+};
+
+const waitForIceGathering = (peer) => {
+  return new Promise((resolve) => {
+    if (peer.iceGatheringState === 'complete') {
+      resolve();
+      return;
+    }
+    
+    let resolved = false;
+    const done = () => {
+      if (resolved) return;
+      resolved = true;
+      peer.onicegatheringstatechange = null;
+      peer.onicecandidate = null;
+      resolve();
+    };
+
+    peer.onicegatheringstatechange = () => {
+      if (peer.iceGatheringState === 'complete') {
+        done();
+      }
+    };
+
+    peer.onicecandidate = (event) => {
+      if (!event.candidate) {
+        done();
+      }
+    };
+
+    // 4 seconds fallback
+    setTimeout(done, 4000);
+  });
 };
 
 export const CallProvider = ({ children }) => {
@@ -52,6 +85,17 @@ export const CallProvider = ({ children }) => {
         callerSignal: data.signal,
         callWithId: data.from,
       });
+    });
+
+    s.on('call-accepted', async (signal) => {
+      if (peerRef.current) {
+        try {
+          await peerRef.current.setRemoteDescription(new RTCSessionDescription(signal));
+          setCallState((prev) => ({ ...prev, status: 'connected' }));
+        } catch (err) {
+          console.error('Error setting remote description inside call-accepted socket callback:', err);
+        }
+      }
     });
 
     s.on('call-ended', () => {
@@ -121,24 +165,34 @@ export const CallProvider = ({ children }) => {
       peer.addTrack(track, stream);
     });
 
-    peer.onicecandidate = (event) => {
-      if (event.candidate) {
-        // Send candidate via socket
-      }
-    };
+    const remote = new MediaStream();
+    setRemoteStream(remote);
 
     peer.ontrack = (event) => {
-      if (event.streams && event.streams[0]) {
-        setRemoteStream(event.streams[0]);
+      if (event.track) {
+        remote.addTrack(event.track);
         setCallState((prev) => ({ ...prev, status: 'connected' }));
       }
     };
 
-    // In a full implementation, you would create an offer, setLocalDescription,
-    // and emit the signal through socket.io (similar to simple-peer).
-    // For the sake of this prototype, we are mocking the basic structure.
+    try {
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
 
-  }, [getMedia]);
+      await waitForIceGathering(peer);
+
+      socketRef.current?.emit('call-user', {
+        userToCall,
+        signalData: peer.localDescription,
+        from: callUser._id,
+        name: callUser.name,
+        type,
+      });
+    } catch (err) {
+      console.error('Error starting WebRTC call offer:', err);
+      performCleanup();
+    }
+  }, [getMedia, performCleanup]);
 
   const answerCall = useCallback(async () => {
     const { callerSignal, callerId, callType } = callState;
@@ -152,14 +206,33 @@ export const CallProvider = ({ children }) => {
       peer.addTrack(track, stream);
     });
 
+    const remote = new MediaStream();
+    setRemoteStream(remote);
+
     peer.ontrack = (event) => {
-      if (event.streams && event.streams[0]) {
-        setRemoteStream(event.streams[0]);
+      if (event.track) {
+        remote.addTrack(event.track);
         setCallState((prev) => ({ ...prev, status: 'connected' }));
       }
     };
 
-    // Full implementation requires handling offers and answers.
+    try {
+      await peer.setRemoteDescription(new RTCSessionDescription(callerSignal));
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+
+      await waitForIceGathering(peer);
+
+      socketRef.current?.emit('answer-call', {
+        to: callerId,
+        signal: peer.localDescription,
+      });
+
+      setCallState((prev) => ({ ...prev, status: 'connected' }));
+    } catch (err) {
+      console.error('Error answering WebRTC call:', err);
+      performCleanup();
+    }
   }, [callState, getMedia, performCleanup]);
 
   const rejectCall = useCallback(() => {
@@ -175,6 +248,26 @@ export const CallProvider = ({ children }) => {
     performCleanup();
   }, [callState, performCleanup]);
 
+  const toggleMute = useCallback(() => {
+    if (localStream) {
+      const track = localStream.getAudioTracks()[0];
+      if (track) {
+        track.enabled = !track.enabled;
+        setIsMuted((p) => !p);
+      }
+    }
+  }, [localStream]);
+
+  const toggleVideo = useCallback(() => {
+    if (localStream) {
+      const track = localStream.getVideoTracks()[0];
+      if (track) {
+        track.enabled = !track.enabled;
+        setIsVideoOff((p) => !p);
+      }
+    }
+  }, [localStream]);
+
   return (
     <CallContext.Provider
       value={{
@@ -187,6 +280,8 @@ export const CallProvider = ({ children }) => {
         answerCall,
         rejectCall,
         endCall,
+        toggleMute,
+        toggleVideo,
       }}
     >
       {children}
