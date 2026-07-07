@@ -36,12 +36,16 @@ jobs:
       - name: Generate Native Android Code (Expo Prebuild)
         working-directory: ./TalkToMe-app
         run: npx expo prebuild --platform android
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
 
       - name: Build APK (Assemble Release)
         working-directory: ./TalkToMe-app/android
         run: |
           echo "org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1024m" >> gradle.properties
-          ./gradlew assembleRelease -x lintVitalRelease
+          ./gradlew assembleRelease -x lintVitalRelease --info
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
 
       - name: Rename APK
         working-directory: ./TalkToMe-app/android/app/build/outputs/apk/release
