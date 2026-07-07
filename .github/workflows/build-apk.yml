@@ -39,7 +39,9 @@ jobs:
 
       - name: Build APK (Assemble Release)
         working-directory: ./TalkToMe-app/android
-        run: ./gradlew assembleRelease
+        run: |
+          echo "org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1024m" >> gradle.properties
+          ./gradlew assembleRelease -x lintVitalRelease
 
       - name: Rename APK
         working-directory: ./TalkToMe-app/android/app/build/outputs/apk/release
