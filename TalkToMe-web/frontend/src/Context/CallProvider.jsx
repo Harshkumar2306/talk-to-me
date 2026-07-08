@@ -4,7 +4,7 @@ import Peer from 'simple-peer';
 import { ChatState } from './ChatProvider';
 
 const CallContext = createContext(null);
-const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || 'https://talk-to-me-1-jhl1.onrender.com';
 
 const getIceServers = () => {
   const servers = [

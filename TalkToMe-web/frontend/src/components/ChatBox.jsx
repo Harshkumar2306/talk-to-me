@@ -15,7 +15,7 @@ import io from 'socket.io-client';
 import GroupInfoModal from './Group/GroupInfoModal';
 import MessageToast from './MessageToast';
 
-const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || 'https://talk-to-me-1-jhl1.onrender.com';
 const CLOUDINARY_CLOUD = 'drnp7fcux';
 const CLOUDINARY_PRESET = 'chat-app';
 let socket, selectedChatCompare;

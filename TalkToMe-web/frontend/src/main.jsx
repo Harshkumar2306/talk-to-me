@@ -8,9 +8,7 @@ import { CallProvider } from './Context/CallProvider.jsx';
 import { GroupCallProvider } from './Context/GroupCallProvider.jsx';
 import { ThemeProvider } from './Context/ThemeProvider.jsx';
 import axios from 'axios';
-
-axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || '';
-
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || 'https://talk-to-me-1-jhl1.onrender.com';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <ChatProvider>

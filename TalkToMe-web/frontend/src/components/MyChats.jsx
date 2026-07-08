@@ -7,7 +7,7 @@ import { AnimatePresence } from 'framer-motion';
 import CreateGroupModal from './Group/CreateGroupModal';
 import io from 'socket.io-client';
 
-const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || 'https://talk-to-me-1-jhl1.onrender.com';
 
 const MyChats = () => {
   const [loggedUser, setLoggedUser] = useState();

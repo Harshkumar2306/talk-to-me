@@ -11,7 +11,7 @@ import SearchModal from './SearchModal';
 import axios from 'axios';
 import io from 'socket.io-client';
 
-const ENDPOINT = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:5001');
+const ENDPOINT = import.meta.env.VITE_BACKEND_URL || 'https://talk-to-me-1-jhl1.onrender.com';
 // Use axios.defaults.baseURL so profile update hits Render, not Vercel
 const BACKEND = axios.defaults.baseURL || ENDPOINT;
 
