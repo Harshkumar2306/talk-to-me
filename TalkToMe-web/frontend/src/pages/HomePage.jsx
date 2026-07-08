@@ -30,9 +30,9 @@ const HomePage = () => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.1 }}
-      className="w-full"
+      className="w-full max-w-md"
     >
-      <div className="bg-[#1e293b]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl w-full">
+      <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">Continue to Web</h2>
           <p className="text-gray-400 text-sm">Sign in or create an account to start chatting</p>
@@ -119,7 +119,7 @@ const HomePage = () => {
           </div>
 
           {/* Mobile Auth Box */}
-          <div ref={authBoxRef} className={`lg:hidden w-full flex justify-center ${showAuthOnMobile ? 'block' : 'hidden'}`}>
+          <div ref={authBoxRef} className={`lg:hidden w-full justify-center ${showAuthOnMobile ? 'flex' : 'hidden'}`}>
             {AuthBox}
           </div>
 
