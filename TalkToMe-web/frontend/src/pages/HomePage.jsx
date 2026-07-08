@@ -154,6 +154,7 @@ const HomePage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
+            className="w-full flex justify-center"
           >
             <a 
               href="https://github.com/Harshkumar2306/talk-to-me/releases/latest/download/TalkToMe.apk" 
