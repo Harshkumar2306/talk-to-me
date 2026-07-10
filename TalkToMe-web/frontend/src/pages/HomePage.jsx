@@ -101,7 +101,7 @@ const HomePage = () => {
                 TalkTo<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-400">Me</span>
               </h1>
             </div>
-            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-8">
+            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-8 lg:mb-0">
               Enjoy fluid, ultra-secure, and blazing-fast messaging. Break the distance with friends, share life's best moments, and stay perfectly in sync anywhere you go.
             </p>
             
