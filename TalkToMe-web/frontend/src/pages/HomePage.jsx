@@ -30,9 +30,9 @@ const HomePage = () => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.1 }}
-      className="w-full max-w-md flex flex-col h-full"
+      className="w-full max-w-md"
     >
-      <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex-1 flex flex-col justify-center">
+      <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">Continue to Web</h2>
           <p className="text-gray-400 text-sm">Sign in or create an account to start chatting</p>
@@ -82,11 +82,10 @@ const HomePage = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-600/30 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/20 blur-[120px]" />
 
-      <div className="container mx-auto flex items-center justify-center p-6 pt-12 lg:pt-6 z-10 h-full overflow-y-auto">
-        <div className="flex flex-col lg:flex-row items-center lg:items-stretch justify-center w-full gap-12 lg:gap-24">
+      <div className="container mx-auto flex flex-col lg:flex-row items-center justify-start lg:justify-center p-6 pt-12 lg:pt-6 z-10 h-full overflow-y-auto gap-12 lg:gap-24">
         
         {/* Left Side: Branding & Info */}
-        <div className="flex-1 flex flex-col justify-center lg:justify-between items-center lg:items-start text-center lg:text-left max-w-xl gap-6">
+        <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left max-w-xl gap-6">
           <div className="bg-[#1e293b]/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white/10 shadow-2xl w-full flex flex-col items-center lg:items-start">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -178,8 +177,7 @@ const HomePage = () => {
         <div className="hidden lg:flex flex-1 w-full max-w-md justify-center">
           {AuthBox}
         </div>
-        
-        </div>
+
       </div>
     </div>
   );
