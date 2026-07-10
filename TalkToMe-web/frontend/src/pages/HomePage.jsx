@@ -130,26 +130,26 @@ const HomePage = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 w-full"
           >
-            <div className="flex flex-col items-center lg:items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="p-3 bg-brand-500/20 rounded-2xl text-brand-400">
                 <Zap size={24} />
               </div>
               <h3 className="font-semibold text-white">Real-time</h3>
-              <p className="text-sm text-gray-400 text-center lg:text-left">Instant messaging with zero latency.</p>
+              <p className="text-sm text-gray-400 text-center">Instant messaging with zero latency.</p>
             </div>
-            <div className="flex flex-col items-center lg:items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="p-3 bg-purple-500/20 rounded-2xl text-purple-400">
                 <ShieldCheck size={24} />
               </div>
               <h3 className="font-semibold text-white">Secure</h3>
-              <p className="text-sm text-gray-400 text-center lg:text-left">Your conversations are protected.</p>
+              <p className="text-sm text-gray-400 text-center">Your conversations are protected.</p>
             </div>
-            <div className="flex flex-col items-center lg:items-start gap-2">
+            <div className="flex flex-col items-center gap-2">
               <div className="p-3 bg-pink-500/20 rounded-2xl text-pink-400">
                 <Users size={24} />
               </div>
               <h3 className="font-semibold text-white">Group Chats</h3>
-              <p className="text-sm text-gray-400 text-center lg:text-left">Stay connected with everyone.</p>
+              <p className="text-sm text-gray-400 text-center">Stay connected with everyone.</p>
             </div>
           </motion.div>
 
