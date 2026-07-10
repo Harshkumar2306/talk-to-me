@@ -102,7 +102,7 @@ const HomePage = () => {
               </h1>
             </div>
             <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-8 lg:mb-0">
-              Enjoy fluid, ultra-secure, and blazing-fast messaging. Break the distance with friends, share life's best moments, and stay perfectly in sync anywhere you go.
+              Communication, redefined. Step into a sleek, lag-free chatting experience where your privacy is guaranteed and every moment feels closer than ever.
             </p>
             
             {!showAuthOnMobile && (
